@@ -41,8 +41,8 @@ function moveDatabaseRestorePatient(record_id, queue_id, patient_id) {
       return response.json();
     })
     .then((data) => {
+      navDimmer.classList.remove("loading");
       if (data.success) {
-        navDimmer.classList.remove("loading");
         const popup_data = {
           heading: "Patient Restored",
           message: `Queue ID <span class="bolded">${queue_id}</span> was <br><span class="bolded">restored to the queue.</span>`,
@@ -53,7 +53,6 @@ function moveDatabaseRestorePatient(record_id, queue_id, patient_id) {
         showPopup(popup_data, "success_popup");
       } else {
         alert("Failed to restore record: " + data.error);
-        navDimmer.classList.remove("loading");
       }
     })
     .catch((error) => {

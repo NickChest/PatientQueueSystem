@@ -420,6 +420,7 @@ function updateDatabasePlaces(page) {
     })
     .then((data) => {
       if (data.success) {
+        // for debugging.
         // alert(`Queue order updated successfully. \n(${data.updated_rows} records updated)`);
       } else {
         alert(`Failed to save order. Error: ` + data.error);

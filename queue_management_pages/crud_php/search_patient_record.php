@@ -10,6 +10,7 @@ $raw_data = file_get_contents("php://input");
 $query_data = json_decode($raw_data, true);
 
 $user_department = $_SESSION["user_department"];
+$user_privileges = $_SESSION["privileges"];
 
 $query = "patient_id = ?";
 $params = "i";
@@ -65,9 +66,17 @@ if ($result->num_rows === 0) {
   // if no records found, say none were found but querying was a success
   echo json_encode(["success" => true, "found" => false]);
 } elseif ($result->num_rows === 1) {
-  // if exactly one is found, proceed to show the confirmation screen
+
   $patient_record = $result->fetch_assoc();
 
+  // check if patient is already in queue using id
+  if (isInQueue($patient_record["patient_id"], $user_department, $user_privileges, $conn)) {
+    $formatted_patient_name = formatName($patient_record["patient_first_name"], $patient_record["patient_middle_name"], $patient_record["patient_last_name"]);
+    echo json_encode(["success" => true, "in_queue" => true, "patient_id" => $patient_record["patient_id"], "patient_name" => $formatted_patient_name]);
+    exit();
+  }
+
+  // if exactly one is found and it's not already in the queue, proceed to show the confirmation screen
   $expected_id = getExpectedQueueID($user_department, $conn);
 
   echo json_encode(["success" => true, "found" => true, "patient_record" => $patient_record, "expected_id" => $expected_id]);

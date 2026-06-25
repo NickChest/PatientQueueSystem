@@ -1,7 +1,6 @@
 <?php
 include "../../global/patient_database_connection.php";
 
-
 header("Content-Type: application/json");
 
 $raw_data = file_get_contents("php://input");

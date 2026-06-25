@@ -338,7 +338,7 @@ function loadPage(page) {
           if (data.length === 0) {
             articleElement.innerHTML = `
                 <div class="empty">There are currently no patients in the queue</div>
-                <button class="add_patient button-default bg-green" id="add_patient">Add Patient</button>
+                <!-- <button class="add_patient button-default bg-green" id="add_patient">Add Patient</button> -->
               `;
 
             document
@@ -709,8 +709,10 @@ function showPopup(popup_data, popup_type) {
       let recordPopupHTML = `
           <div class='popup multiple_records'>
             <div class='popup_heading'>Add Patient / Found Records</div>
-            <div class='message'>Found records for <span class='bolded'>${formatted_query}</span> with birthdate <span class='bolded'>${formatted_birthdate}</span>:</div>
+            <div class='message'>Matching records for <span class='bolded'>${formatted_query}</span> with birthdate <span class='bolded'>${formatted_birthdate}</span>:</div>
               <div class='records_container'>`;
+
+      index = 0;
 
       popup_data.patient_records.forEach((record) => {
         recordPopupHTML += `
@@ -718,11 +720,11 @@ function showPopup(popup_data, popup_type) {
             <div class='info_summary'>
               <div class='info'>
                 <span>Patient ID:</span>
-                ${record.patient_id}
+                <span>${record.patient_id}</span>
               </div>
               <div class='info'>
                 <span>Name:</span>
-                ${record.patient_last_name}, ${record.patient_first_name} ${record.patient_middle_name}
+                ${record.patient_last_name}, ${record.patient_first_name} ${record.patient_middle_name ? record.patient_middle_name : ""}
               </div>
               <div class='info'>
                 <span>Address:</span>
@@ -733,11 +735,13 @@ function showPopup(popup_data, popup_type) {
                 ${record.patient_contact_number}
               </div>
             </div>
-            <div class='view_details'>
-              <button class='button-default bg-blue'>View Details</button>
+            <div class='add_patient'>
+              <button class='button-default bg-blue select_record' data-index='${index}'>Select Record</button>
             </div>                  
           </div>
         `;
+
+        index++;
       });
 
       recordPopupHTML += `
@@ -762,6 +766,19 @@ function showPopup(popup_data, popup_type) {
           ).style.display = "block";
           document.querySelector(".popup.multiple_records").remove();
         });
+
+      const selectRecordElements = document.querySelectorAll(".select_record");
+
+      selectRecordElements.forEach((recordElement) => {
+        recordElement.addEventListener("click", () => {
+          addPatientRecordSearch({
+            patient_id:
+              popup_data.patient_records[recordElement.dataset.index]
+                .patient_id,
+          });
+        });
+      });
+
       break;
     case "add_patient_confirm":
       popupContainerElement.innerHTML = `
@@ -780,9 +797,16 @@ function showPopup(popup_data, popup_type) {
 
       if (recordLinkElement) {
         recordLinkElement.addEventListener("click", () => {
+          // NOTE THIS IS THE RECORD ID USED IN THE PATIENT RECORDS TABLE
           viewRecord(popup_data["record_id"], "patient_record_id", true);
         });
       }
+
+      document
+        .querySelector("#confirm_button")
+        .addEventListener("click", () => {
+          addDatabasePatient(popup_data["record_id"]);
+        });
       break;
     case "expanded_patient_info":
       // asked gemini to fixed this because i am so tired... it is 12:02 am

@@ -100,7 +100,7 @@ if (!empty($_POST)) {
           <div class='account_info'>
             <div class='text'>
               <div class='name'>{$_SESSION['staff_name']}</div>
-              <div class='department'>{$_SESSION['user_department']} - {$_SESSION['privileges']}</div>
+              <div class='department'>{$_SESSION['user_department']} - " . ucfirst($_SESSION['privileges']) . "</div>
             </div>
             <img src='global/img/account.png' alt='' />
           </div>
@@ -145,11 +145,10 @@ if (!empty($_POST)) {
 
     <script src='queue_management_pages/login_script.js'></script>
     ";
+  }
 
-    }
-
-    $conn->close();
-    ?>
+  $conn->close();
+  ?>
 </body>
 
 </html>

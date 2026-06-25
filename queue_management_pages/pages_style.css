@@ -237,6 +237,7 @@ nav.open {
     }
     .other {
       display: flex;
+      align-items: center;
       gap: 0.4ch;
       input[type="text"] {
         flex-grow: 1;
@@ -375,23 +376,28 @@ nav.open {
         border-radius: var(--radius-default);
         box-shadow: 0 4px 4px var(--shadow-default);
         margin-bottom: var(--page-padding-half);
-        display: grid;
-        grid-template-columns: 2fr 0.7fr;
+        display: flex;
+        grid-template-columns: 2fr 0.9fr;
 
         .info_summary {
+          flex-grow: 1;
           span {
             font-weight: bold;
           }
 
           border-right: 1px solid var(--black-pure);
+
+          .info:nth-child(2) {
+            margin-bottom: 15px;
+          }
         }
 
-        .view_details {
-          text-align: right;
-          min-width: 30%;
-          padding-right: var(--page-padding-half);
+        .add_patient {
+          width: 30%;
+          text-align: center;
+          padding-inline: var(--page-padding-default) var(--page-padding-half);
           button {
-            width: 80%;
+            width: 100%;
           }
         }
       }
