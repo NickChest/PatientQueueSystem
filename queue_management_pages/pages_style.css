@@ -219,6 +219,9 @@ nav.open {
       margin-block: 20px;
       max-width: 60px;
     }
+    .message {
+      user-select: text;
+    }
   }
   .popup.reason {
     display: flex;
@@ -339,6 +342,11 @@ nav.open {
       .record_info_group:nth-child(2),
       .record_info_group:nth-child(5) {
         grid-column: 1;
+      }
+      .record_info_group:nth-child(6) {
+        .information {
+          max-width: 50%;
+        }
       }
       .record_info_group:nth-child(7) {
         grid-column: span 2;
@@ -487,12 +495,14 @@ main {
         position: relative;
         border-collapse: separate;
         background: var(--_bg);
+        user-select: text;
 
         thead {
           th {
             background: var(--blue-default);
             color: var(--white-pure);
             border-left: 1px solid var(--white-pure);
+            user-select: none;
           }
           th:first-child {
             border-left: none;
@@ -518,6 +528,9 @@ main {
           }
           td:first-child {
             border-left: none;
+          }
+          td:last-child {
+            user-select: none;
           }
 
           tr:nth-child(n + 2) {
@@ -621,6 +634,7 @@ main {
             background: var(--blue-default);
             border-color: var(--white-pure);
             color: var(--white-pure);
+            user-select: none;
           }
         }
       }

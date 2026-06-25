@@ -373,7 +373,7 @@ function loadPage(page) {
                 <div class="now_serving">Now Serving:</div>
                 <div class="queue_id">${data[0].queue_id}</div>
                 <div class="name">${data[0].patient_name}</div>
-                <div class="record_link" data-id="${data[0].ID}">(<span>Patient ID <span class="patient_id">${data[0].patient_id}</span></span>)</div>
+                <div class="record_link">(<span data-patient-id="${data[0].patient_id}">Patient ID <span class="patient_id">${data[0].patient_id}</span></span>)</div>
               </div>
               <div class="wait_summary">
                 <div class="queue_time_elapsed">
@@ -423,9 +423,11 @@ function loadPage(page) {
             `;
           }
 
-          // note: is it possible to make it so that the places only refreshes AFTER clicking the complete/remove patient button?
-          // i mean it's more robust to be doing it this way (since it'll fix any place discrepancies) but also it's calling
-          // the function like twice as many times as necessary which might be bad performance-wise.
+          document
+            .querySelector(".record_link span")
+            .addEventListener("click", (e) => {
+              viewRecord(e.currentTarget.dataset.patientId, "patient_id", false)
+            });
 
           updateDatabasePlaces(page);
 

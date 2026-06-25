@@ -62,7 +62,7 @@ function isInQueue(int $patient_id, string $user_department, string $user_privil
   return $result->num_rows > 0;
 }
 
-function formatName(string $first_name, string $middle_name, string $last_name)
+function formatName(string $first_name, $middle_name, string $last_name)
 {
   return $last_name . ", " . $first_name . ($middle_name ? (" " . $middle_name) : "");
 }
