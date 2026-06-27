@@ -58,8 +58,21 @@ if (!$select_stmt->execute()) {
 $patient_record = $select_stmt->get_result()->fetch_assoc();
 $select_stmt->close();
 
-$queue_id = getExpectedQueueID($department, $conn);
+$queue_id = getExpectedQueueID($department, $conn, false);
 $patient_id = $patient_record["patient_id"];
+
+// get number of people waiting ahead
+$waiting = 0;
+$date_clause = "AND added_time_and_date >= CURDATE() AND added_time_and_date < CURDATE() + INTERVAL 1 DAY";
+$count_sql = "SELECT COUNT(queue_id) FROM tbl_queues WHERE department = ? $date_clause";
+
+$count_stmt = $conn->prepare($count_sql);
+$count_stmt->bind_param("s", $department);
+$count_stmt->execute();
+$count_stmt->bind_result($waiting);
+$count_stmt->fetch();
+$count_stmt->close();
+
 
 $formatted_name = formatName($patient_record["patient_first_name"], $patient_record["patient_middle_name"], $patient_record["patient_last_name"]);
 
@@ -80,7 +93,7 @@ if ($insert_stmt->affected_rows === 0) {
 }
 $insert_stmt->close();
 
-echo json_encode(["success" => true, "patient_id" => $patient_id, "formatted_name" => $formatted_name, "queue_id" => $queue_id]);
+echo json_encode(["success" => true, "patient_id" => $patient_id, "formatted_name" => $formatted_name, "queue_id" => $queue_id, "date_and_time" => date('Y-d-m | h:i:s A'), "waiting" => $waiting]);
 
 $conn_patients->close();
 $conn->close();

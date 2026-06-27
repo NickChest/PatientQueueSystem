@@ -300,12 +300,23 @@ function loadPage(page) {
             fetchedHTML += `<td>${removed_patient.patient_id}</td>`;
             fetchedHTML += `<td>${removed_patient.patient_name}</td>`;
             fetchedHTML += `<td>${removed_patient.reason}</td>`;
-            fetchedHTML += `
-              <td><button class="button-default bg-blue restore_button" 
-              data-id="${removed_patient.ID}" 
-              data-queue-id="${removed_patient.queue_id}"
-              data-patient-id="${removed_patient.patient_id}"
-              >Restore</button></td>`;
+            
+            // NOTE: maybe show date removed if admin?
+            // also change the restore button to dashes too for the admin if the record wasn't added today
+            if (removed_patient.reason !== "Auto-flushed: Day has passed") {
+              fetchedHTML += `
+                <td><button class="button-default bg-blue restore_button" 
+                data-id="${removed_patient.ID}" 
+                data-queue-id="${removed_patient.queue_id}"
+                data-patient-id="${removed_patient.patient_id}"
+                >Restore</button></td>`;
+            } else {
+              fetchedHTML += `
+                <td> 
+                ---
+                </td>
+              `;
+            }
             fetchedHTML += `</tr>`;
           });
           fetchedHTML += `</tbody>`;
@@ -445,8 +456,6 @@ function showPopup(popup_data, popup_type) {
   let confirmButtonElement = "";
   let popupHTML = "";
   switch (popup_type) {
-    // note: if i end up just using the dataset attribute to add the record data directly to the button, change the keys to be camelCase
-
     case "confirm_popup":
       popupHTML = `
         <div class="popup">

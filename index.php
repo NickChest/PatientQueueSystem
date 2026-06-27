@@ -47,11 +47,9 @@ if (!empty($_POST)) {
   <link rel='stylesheet' href='global/resets.css' />
   <link rel='stylesheet' href='queue_management_pages/pages_style.css' />
   <link rel='stylesheet' href='queue_management_pages/login_style.css' />
-  <link rel='preconnect' href='https://fonts.googleapis.com' />
-  <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin />
-  <link
-    href='https://fonts.googleapis.com/css2?family=Cal+Sans&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap'
-    rel='stylesheet' />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inconsolata:wght@200..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <link rel='shortcut icon' href='global/icon.ico' type='image/x-icon'>
   <title>Login | Patient Queue System</title>
 </head>
@@ -100,7 +98,7 @@ if (!empty($_POST)) {
           <div class='account_info'>
             <div class='text'>
               <div class='name'>{$_SESSION['staff_name']}</div>
-              <div class='department'>{$_SESSION['user_department']} - " . ucfirst($_SESSION['privileges']) . "</div>
+              <div class='department'>{$_SESSION['user_department']} " . ucfirst($_SESSION['privileges']) . "</div>
             </div>
             <img src='global/img/account.png' alt='' />
           </div>

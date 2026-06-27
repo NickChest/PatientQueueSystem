@@ -9,7 +9,7 @@ if (!isset($_SESSION["user_department"])) {
 $user_department = $_SESSION["user_department"];
 
 // get only the records for today if not admin
-$date_clause = "AND removed_time_and_date >= CURDATE() AND removed_time_and_date < CURDATE() + INTERVAL 1 DAY";
+$date_clause = "AND removed_time_and_date >= CURDATE() AND removed_time_and_date < CURDATE() + INTERVAL 1 DAY AND reason != 'Auto-flushed: Day has passed'";
 if ($_SESSION["privileges"] === "admin") {
   $date_clause = "";
 }

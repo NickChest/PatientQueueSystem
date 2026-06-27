@@ -1,25 +1,5 @@
-// const dateElement = document.getElementById("date");
 const timeElement = document.getElementById("time");
 
-// note, maybe just change this to php
-
-// const months = [
-//   "January",
-//   "February",
-//   "March",
-//   "April",
-//   "May",
-//   "June",
-//   "July",
-//   "August",
-//   "September",
-//   "October",
-//   "November",
-//   "December",
-// ];
-
-// let formatted_date = `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-// dateElement.textContent = formatted_date;
 updateTime();
 
 function updateTime() {

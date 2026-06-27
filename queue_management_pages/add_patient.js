@@ -68,28 +68,145 @@ function addDatabasePatient(record_id) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ record_id }),
   })
-    .then(response => {
+    .then((response) => {
       return response.json();
     })
-    .then(data => {
+    .then((data) => {
       navDimmer.classList.remove("loading");
       if (data.success) {
         const popup_data = {
           heading: "Add Patient Success",
           success_icon: true,
-          message: `<span class="bolded">Patient ID ${data.patient_id} (${data.formatted_name})</span><br>was <span class="bolded">added to the queue</span><br>Queue ID: <span class="bolded">${data.queue_id}</span>`
-        }
+          message: `<span class="bolded">Patient ID ${data.patient_id} (${data.formatted_name})</span><br>was <span class="bolded">added to the queue</span><br>Queue ID: <span class="bolded">${data.queue_id}</span>`,
+        };
 
         showPopup(popup_data, "success_popup");
-        
+        generateQueueSlip(data);
+
         // for now, users can only add patients on the patients management page
         // i mean there's no indication anyways that you can add a patient on the focused view unless there are no patients
-        loadPage("queue_m_page")
+        loadPage("queue_m_page");
       } else {
         alert("Failed to add patient to queue: " + data.error);
       }
     })
-    .catch(error => {
-      console.error("AJAX Error: ", error)
-    })
+    .catch((error) => {
+      console.error("AJAX Error: ", error);
+    });
+}
+
+function generateQueueSlip(patient_queue_data) {
+  const iframe = document.createElement("iframe");
+  iframe.style.display = "none";
+  document.body.appendChild(iframe);
+
+  const baseUrl = window.location.href.substring(
+    0,
+    window.location.href.lastIndexOf("/") + 1,
+  );
+
+  const queueSlipHTML = `
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <base href="${baseUrl}">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inconsolata:wght@200..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet"
+      />
+      <style>
+        @page {
+          size: 4.25in 5.5in;
+          margin: 0;
+        }
+
+        body {
+          width: 4.25in;
+          height: 5.5in;
+          margin: 0;
+          padding: 0.25in; /* Safe padding so text doesn't touch the paper edge */
+          box-sizing: border-box;
+          font-family: Arial, sans-serif;
+          font-size: 10pt; /* Points (pt) are best for readable printed text */
+          text-align: center;
+          font-family: "Inconsolata", Consolas;
+        }
+        h1,
+        h2,
+        .queue_id,
+        span,
+        .date_and_time,
+        .reminder {
+          font-weight: bold;
+        }
+        h1 {
+          font-size: 15pt;
+          line-height: 0.5ch;
+        }
+        h2 {
+          line-height: 2ch;
+          font-size: 10pt;
+        }
+        .queue_id {
+          font-size: 50pt;
+        }
+        img {
+          width: 1in;
+          height: 1in;
+          margin-block: 5pt;
+        }
+        .date_and_time,
+        .waiting {
+          font-size: 15pt;
+          line-height: 2ch;
+        }
+        .reminder {
+          font-size: 15pt;
+          margin-block: 15pt;
+          line-height: 2ch;
+        }
+        .reminder_2 {
+          font-size: 10pt;
+          margin-bottom: 10pt;
+          line-height: 2ch;
+        }
+        .reminder_live_queue {
+          font-size: 10pt;
+          line-height: 2ch;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>H+A MEDICAL CENTER</h1>
+      <h2>CENTRALIZED PATIENT QUEUE SYSTEM<br />QUEUE SLIP</h2>
+      <div class="queue_id">${patient_queue_data.queue_id}</div>
+      <! -- TODO: qr code generation -->
+      <img src="global/qr_code.png" alt="QR CODE" />
+      <div class="date_and_time">${patient_queue_data.date_and_time}</div>
+      <div class="waiting">Waiting ahead: <span>${patient_queue_data.waiting}</span></div>
+      <div class="reminder">Please wait for your<br />number to be called.</div>
+      <div class="reminder_2">
+        <span>Numbers may not be called<br />in sequence.</span> Thank you.
+      </div>
+      <div class="reminder_live_queue">
+        Scan the QR code or visit<br /><span>www.HAMedCenterQueue.com</span> to
+        get live<br />updates on your place in queue.
+      </div>
+    </body>
+  </html>
+  `;
+
+  iframe.contentWindow.document.body.innerHTML = queueSlipHTML;
+
+  iframe.onload = () => {
+    iframe.contentWindow.print();
+
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 1000);
+  };
 }

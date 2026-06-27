@@ -257,7 +257,6 @@ function moveDatabaseRemovePatient(patient_info, page) {
 }
 
 function updatePlaces(rowElements) {
-  //note/TODO: add record_id to info button
   let current_place = 1;
   for (const row of rowElements) {
     row.firstElementChild.textContent = current_place;

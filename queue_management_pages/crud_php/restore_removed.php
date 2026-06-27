@@ -47,6 +47,8 @@ try {
                            WHERE department = ?
                        )
                        WHERE patient_id = ?";
+
+  // TODO: fix is_calling and called_time_and_date when record is restored and is first
   
   $stmt_update_place = $conn->prepare($update_place_sql);
   $stmt_update_place->bind_param("si", $_SESSION["user_department"], $patient_id);
