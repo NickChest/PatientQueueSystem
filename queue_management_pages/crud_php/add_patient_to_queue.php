@@ -23,13 +23,11 @@ $new_place = (int)$place_row["new_place"];
 $place_stmt->close();
 
 $called_time = null;
-$is_new = 0;
 $is_calling = 0;
 
 if ($new_place === 1) {
   $called_time = date('Y-m-d H:i:s');
   $is_calling = 1;
-  $is_new = 1;
 }
 
 if (!isset($record_id_data["record_id"])) {
@@ -76,8 +74,8 @@ $count_stmt->close();
 
 $formatted_name = formatName($patient_record["patient_first_name"], $patient_record["patient_middle_name"], $patient_record["patient_last_name"]);
 
-$insert_sql = "INSERT INTO tbl_queues (place, queue_id, patient_id, patient_name, department, added_by, added_time_and_date, called_time_and_date, is_calling, is_new)
-               VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)";
+$insert_sql = "INSERT INTO tbl_queues (place, queue_id, patient_id, patient_name, department, added_by, added_time_and_date, called_time_and_date, is_calling)
+               VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
 
 $insert_stmt = $conn->prepare($insert_sql);
 if (!$insert_stmt) {
@@ -85,7 +83,7 @@ if (!$insert_stmt) {
   exit();
 }
 
-$insert_stmt->bind_param("isissssii", $new_place, $queue_id, $patient_id, $formatted_name, $department, $_SESSION["username"], $called_time, $is_calling, $is_new);
+$insert_stmt->bind_param("isissssi", $new_place, $queue_id, $patient_id, $formatted_name, $department, $_SESSION["username"], $called_time, $is_calling);
 $insert_stmt->execute();
 
 if ($insert_stmt->affected_rows === 0) {

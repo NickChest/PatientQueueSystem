@@ -273,9 +273,16 @@ function loadPage(page) {
                 <fieldset>
                   <select name="reason" id="reason">
                     <option value="" disabled selected>Reason</option>`;
+
+          let reasons_array = [];
           data.forEach((removed_patient) => {
-            fetchedHTML += `<option value="${removed_patient.reason}">${removed_patient.reason}</option>`;
+            if (!reasons_array.includes(removed_patient.reason)) {
+              fetchedHTML += `<option value="${removed_patient.reason}">${removed_patient.reason}</option>`;
+              reasons_array.push(removed_patient.reason);
+              console.log(reasons_array);
+            } else return;
           });
+
           fetchedHTML += `</select>
                 </fieldset>
               </form>
@@ -300,10 +307,11 @@ function loadPage(page) {
             fetchedHTML += `<td>${removed_patient.patient_id}</td>`;
             fetchedHTML += `<td>${removed_patient.patient_name}</td>`;
             fetchedHTML += `<td>${removed_patient.reason}</td>`;
-            
-            // NOTE: maybe show date removed if admin?
-            // also change the restore button to dashes too for the admin if the record wasn't added today
-            if (removed_patient.reason !== "Auto-flushed: Day has passed") {
+
+            if (
+              removed_patient.is_today &&
+              removed_patient.reason !== "Auto-flushed: Day has passed"
+            ) {
               fetchedHTML += `
                 <td><button class="button-default bg-blue restore_button" 
                 data-id="${removed_patient.ID}" 
@@ -393,7 +401,7 @@ function loadPage(page) {
                 <div class="call_time_elapsed">Time since first call: <span id="call_time"><span></div>
               </div>
               <div class="buttons">
-                <button class="call button-default bg-blue">
+                <button class="call button-default bg-blue" id="call_button">
                   <div class="call_icon icon">
                     <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M13.137 3.945C12.493 3.571 12.095 2.875 12.096 2.125V2.122C12.097 0.95 11.158 0 10 0C8.842 0 7.903 0.95 7.903 2.122V2.125C7.904 2.876 7.507 3.571 6.862 3.945C2.195 6.657 4.877 15.66 0 17.251V19H20V17.251C15.123 15.66 17.805 6.657 13.137 3.945ZM10 1C10.552 1 11 1.449 11 2C11 2.552 10.552 3 10 3C9.448 3 9 2.552 9 2C9 1.449 9.448 1 10 1ZM13 21C13 22.598 11.608 24 10.029 24C8.45 24 7 22.598 7 21H13Z" fill="white"/>
@@ -437,7 +445,11 @@ function loadPage(page) {
           document
             .querySelector(".record_link span")
             .addEventListener("click", (e) => {
-              viewRecord(e.currentTarget.dataset.patientId, "patient_id", false)
+              viewRecord(
+                e.currentTarget.dataset.patientId,
+                "patient_id",
+                false,
+              );
             });
 
           updateDatabasePlaces(page);
@@ -458,10 +470,10 @@ function showPopup(popup_data, popup_type) {
   switch (popup_type) {
     case "confirm_popup":
       popupHTML = `
-        <div class="popup">
+        <div class="popup" id="confirm_popup">
           <div class="popup_heading">${popup_data["heading"]}</div>
           <div class="queue_id emphasis">${popup_data["queue_id"]}</div>
-          <div class="record_link" data-id="${popup_data["record_id"]}">(<span>Patient ID ${popup_data["patient_id"]}</span>)</div>
+          <div class="record_link" data-id="${popup_data["patient_id"]}">(<span>Patient ID ${popup_data["patient_id"]}</span>)</div>
           <div class="message">${popup_data["message"]}</div>
           <div class="options">`;
 
@@ -487,6 +499,9 @@ function showPopup(popup_data, popup_type) {
       confirmButtonElement = document.getElementById("confirm_button");
       document.getElementById("cancel_popup").addEventListener("click", () => {
         resetPopupDimmer();
+      });
+      document.querySelector(".record_link").addEventListener("click", () => {
+        viewRecord(popup_data["patient_id"], "patient_id", false);
       });
       break;
     case "success_popup":
@@ -870,10 +885,17 @@ function showPopup(popup_data, popup_type) {
       }
       viewRecordHTML += `</div>`;
 
+      const confirmPopupElement = document.querySelector("#confirm_popup");
+
       // 2. Append the new HTML safely
-      if (popup_data.is_add_patient) {
-        document.querySelector(".popup.add_patient_confirm").style.display =
-          "none";
+      if (popup_data.is_add_patient || confirmPopupElement) {
+        if (popup_data.is_add_patient) {
+          document.querySelector(".popup.add_patient_confirm").style.display =
+            "none";
+        } else {
+          confirmPopupElement.style.display = "none";
+        }
+
         popupContainerElement.insertAdjacentHTML("beforeend", viewRecordHTML);
       } else {
         popupContainerElement.innerHTML = viewRecordHTML;
@@ -883,9 +905,14 @@ function showPopup(popup_data, popup_type) {
       document
         .querySelector(".view_record_back")
         .addEventListener("click", () => {
-          if (popup_data.is_add_patient) {
-            document.querySelector(".add_patient_confirm").style.display =
-              "block";
+          if (popup_data.is_add_patient || confirmPopupElement) {
+            if (popup_data.is_add_patient) {
+              document.querySelector(".add_patient_confirm").style.display =
+                "block";
+            } else {
+              confirmPopupElement.style.display = "flex";
+            }
+
             document.querySelector(".popup.view_record").remove();
           } else {
             resetPopupDimmer();

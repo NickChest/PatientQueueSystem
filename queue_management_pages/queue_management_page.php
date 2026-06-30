@@ -35,7 +35,7 @@ if ($result) {
   }
   $result->free();
 }
-
+$stmt->close();
 $conn->close();
 
 header("Content-Type: application/json");

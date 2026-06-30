@@ -328,7 +328,7 @@ nav.open {
       grid-template-columns: 1fr 1.3fr 1fr;
       grid-template-rows: repeat(5, 1fr);
       margin-bottom: var(--page-padding-default);
-      
+
       .record_info_group {
         .label {
           margin-bottom: 5px;
@@ -375,7 +375,7 @@ nav.open {
       max-height: 50dvh;
       border-bottom: 1px solid var(--shadow-default);
       overflow-y: auto;
-      
+
       .record {
         align-items: center;
         justify-content: space-between;
@@ -481,6 +481,12 @@ main {
       bottom: var(--page-padding-default);
     }
 
+    #call_button.disabled {
+      filter: saturate(0) brightness(0.9);
+      box-shadow: none;
+      pointer-events: none;
+    }
+
     .table {
       user-select: none;
 
@@ -581,6 +587,7 @@ main {
               height: 47px;
               background: var(--black-pure);
             }
+
             .drag_handle {
               display: flex;
               cursor: grab;

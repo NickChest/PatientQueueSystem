@@ -4,6 +4,17 @@ body {
   background: black;
 }
 
+.confirm {
+  position: fixed;
+  inset: 0;
+  background: #000000c2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white-pure);
+  font-size: 50px;
+}
+
 header {
   background: var(--black-pure);
   color: var(--white-pure);
@@ -32,6 +43,9 @@ main article:not(.video) {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+main article:empty {
+  background: var(--white-pure) !important;
 }
 
 main article:first-child,
@@ -127,6 +141,10 @@ main article:nth-child(14) {
   video {
     max-width: 100%;
   }
-  grid-row: span 2 !important;
-  grid-column: span 10 !important;
+  /* grid-row: span 2 !important;
+  grid-column: span 10 !important; */
+  grid-column-start: 11 !important;
+  grid-column-end: 21 !important;
+  grid-row-start: 3 !important;
+  grid-row-end: 5 !important;
 }

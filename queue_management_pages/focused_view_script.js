@@ -1,7 +1,7 @@
 function setFocusedViewPageFunction() {
   const markedCompletedElement = document.getElementById("mark_completed");
   markedCompletedElement.addEventListener("click", () => {
-    const record_id = document.querySelector(".record_link").dataset.id;
+    const record_id = document.querySelector(".record_id").value;
     const queue_id =
       document.querySelectorAll(".queue_id")[
         document.querySelectorAll(".queue_id").length - 1
@@ -15,10 +15,7 @@ function setFocusedViewPageFunction() {
       message: 'will be <span class="bolded">removed from the queue</span>.',
     };
 
-    const confirmButtonElement = showPopup(
-      popup_data,
-      "confirm_popup",
-    );
+    const confirmButtonElement = showPopup(popup_data, "confirm_popup");
 
     confirmButtonElement.addEventListener("click", () => {
       moveDatabaseMarkCompleted(record_id, queue_id, "focused_view");
@@ -43,5 +40,15 @@ function setFocusedViewPageFunction() {
     };
 
     removePatientFunction(patient_info, "focused_view");
+  });
+
+  callButtonElement = document.getElementById("call_button");
+  callButtonElement.addEventListener("click", () => {
+    const record_id = document.querySelector(".patient_summary .record_id").value;
+
+    callButtonElement.disabled = true;
+    callButtonElement.classList.add("disabled");
+
+    flagDatabaseIsCalling(callButtonElement, record_id);
   });
 }

@@ -303,6 +303,18 @@ function updatePlaces(rowElements) {
         </div>
       </div>
       `;
+      const callButtonElement = document.getElementById("call_button");
+      callButtonElement.addEventListener("click", () => {
+        const record_id =
+          callButtonElement.parentElement.parentElement.parentElement
+            .firstElementChild.dataset.id;
+
+        callButtonElement.disabled = true;
+        callButtonElement.classList.add("disabled");
+
+        flagDatabaseIsCalling(callButtonElement, record_id);
+      });
+
       const markedCompletedElement = document.getElementById("mark_completed");
       markedCompletedElement.addEventListener("click", () => {
         markedCompletedFunction();
@@ -429,4 +441,19 @@ function updateDatabasePlaces(page) {
     .catch((error) => {
       console.error("AJAX Error: ", error);
     });
+}
+
+function flagDatabaseIsCalling(callButtonElement, record_id) {
+  fetch("queue_management_pages/crud_php/set_is_calling.php", {
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+    body: JSON.stringify({
+      record_id,
+    }),
+  });
+  // let user call again after 35 seconds
+  setTimeout(() => {
+    callButtonElement.disabled = false;
+    callButtonElement.classList.remove("disabled");
+  }, 30000);
 }

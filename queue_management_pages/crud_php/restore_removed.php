@@ -18,7 +18,7 @@ $patient_id = (int)$record_id_data["patient_id"];
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 try {
   $conn->begin_transaction();
-  $insert_sql = "INSERT INTO tbl_queues (queue_id, patient_id, patient_name, department, added_by, added_time_and_date, is_calling, is_new)
+  $insert_sql = "INSERT INTO tbl_queues (queue_id, patient_id, patient_name, department, added_by, added_time_and_date, is_calling)
                  SELECT queue_id, patient_id, patient_name, department, ?, added_time_and_date, 0, 0
                  FROM tbl_removed
                  WHERE ID = ?";
@@ -47,8 +47,6 @@ try {
                            WHERE department = ?
                        )
                        WHERE patient_id = ?";
-
-  // TODO: fix is_calling and called_time_and_date when record is restored and is first
   
   $stmt_update_place = $conn->prepare($update_place_sql);
   $stmt_update_place->bind_param("si", $_SESSION["user_department"], $patient_id);

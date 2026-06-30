@@ -11,7 +11,7 @@ if (!$new_order_data) {
   exit();
 }
 
-$sql = "UPDATE tbl_queues SET place = ?, called_time_and_date = ?, is_calling = ?, is_new = ? WHERE ID = ? AND place != ?";
+$sql = "UPDATE tbl_queues SET place = ?, called_time_and_date = ?, is_calling = ? WHERE ID = ? AND place != ?";
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
@@ -27,15 +27,14 @@ foreach ($new_order_data as $order_data) {
     $primary_key = (int)$order_data["record_id"];
     $called_time_and_date = null;
     $is_calling = 0;
-    $is_new = 0;
     
     if ($place === 1) {
+      // TODO: fix this when a user restores a record in an empty queue and it's immediately first place
       $called_time_and_date = date('Y-m-d H:i:s');
       $is_calling = 1;
-      $is_new = 1;
     }
     
-    $stmt->bind_param("isiiii", $place, $called_time_and_date, $is_calling, $is_new, $primary_key, $place);
+    $stmt->bind_param("isiii", $place, $called_time_and_date, $is_calling, $primary_key, $place);
     
     if ($stmt->execute()) {
       $num_updated_records += $stmt->affected_rows;
