@@ -1,5 +1,5 @@
-# PatientQueueSystem
-Made as a project for Practicum 2
+# Harrow + Ammit Medical Center Centralized Patient Queue
+Made as a project for Practicum 1-2.
 
 ## Features
 - Simple, clean interface
