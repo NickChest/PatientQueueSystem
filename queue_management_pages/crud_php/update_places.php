@@ -28,8 +28,7 @@ foreach ($new_order_data as $order_data) {
     $called_time_and_date = null;
     $is_calling = 0;
     
-    if ($place === 1) {
-      // TODO: fix this when a user restores a record in an empty queue and it's immediately first place
+    if ($place === 1 || (count($order_data) === 1)) {
       $called_time_and_date = date('Y-m-d H:i:s');
       $is_calling = 1;
     }

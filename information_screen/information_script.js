@@ -106,6 +106,7 @@ function playCall() {
   const current_calling_patient = call_queue.shift();
   chime_sound.play();
 
+  // note: change this to audio snippets instead?
   chime_sound.onended = () => {
     const speech = new SpeechSynthesisUtterance(
       `Now serving Queue ID ${current_calling_patient.queue_id}.. please proceed to ${current_calling_patient.department}.. thank you`,
