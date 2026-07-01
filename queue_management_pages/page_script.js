@@ -20,10 +20,12 @@ function formatTimeMStoHHMMSS(miliseconds) {
   return formatted;
 }
 
-let queue_interval = "";
-let call_interval = "";
+let queue_interval;
 
 function updateTimeElements(queue_time, call_time) {
+  // clear interval before starting another one
+  clearInterval(queue_interval);
+
   queueTimeElement = document.querySelector("#queue_time");
   callTimeElement = document.querySelector("#call_time");
 
@@ -50,6 +52,10 @@ function updateTimeElements(queue_time, call_time) {
 const pageButtonElements = document.querySelectorAll(".page");
 const articleElement = document.querySelector("article");
 const headerTextElement = document.querySelector("#current_page_text");
+const counterStaffSelectElement = document.querySelector(
+  "#counter_staff_select",
+);
+let current_page = "queue_m_page"; // only used for when user role is "Counter"
 
 pageButtonElements.forEach((page_button) => {
   page_button.addEventListener("click", () => {
@@ -62,10 +68,7 @@ pageButtonElements.forEach((page_button) => {
       button.id = "null";
     }
 
-    clearInterval(queue_interval);
-    clearInterval(call_interval);
-
-    page_button.id = "selected";
+     page_button.id = "selected";
     articleElement.className = "";
 
     let fetchedHTML = '</div class="error">Error reaasatrieving data.</div>';
@@ -88,7 +91,13 @@ function loadPage(page) {
   switch (page) {
     case "queue_m_page":
       document.title = "Queue | Patient Queue System";
-      headerTextElement.textContent = "Queue";
+      if (headerTextElement) {
+        headerTextElement.textContent = "Queue";
+      } else {
+        counterStaffSelectElement.childNodes.forEach((optionElement) => {
+          optionElement.textContent = optionElement.value + " Queue";
+        });
+      }
 
       fetch("queue_management_pages/queue_management_page.php")
         .then((response) => {
@@ -175,7 +184,14 @@ function loadPage(page) {
       break;
     case "completed_pm_page":
       document.title = "Completed Patients | Patient Queue System";
-      headerTextElement.textContent = "— Completed Patients";
+      if (headerTextElement) {
+        headerTextElement.textContent = "— Completed Patients";
+      } else {
+        counterStaffSelectElement.childNodes.forEach((optionElement) => {
+          optionElement.textContent =
+            optionElement.value + " — Completed Patients";
+        });
+      }
 
       fetch("queue_management_pages/completed_management_page.php")
         .then((response) => {
@@ -241,7 +257,14 @@ function loadPage(page) {
       break;
     case "removed_pm_page":
       document.title = "Removed Patients | Patient Queue System";
-      headerTextElement.textContent = "— Removed Patients";
+      if (headerTextElement) {
+        headerTextElement.textContent = "— Removed Patients";
+      } else {
+        counterStaffSelectElement.childNodes.forEach((optionElement) => {
+          optionElement.textContent =
+            optionElement.value + " — Removed Patients";
+        });
+      }
 
       fetch("queue_management_pages/removed_management_page.php")
         .then((response) => {
@@ -337,7 +360,13 @@ function loadPage(page) {
       break;
     case "focused_view":
       document.title = "Focused View | Patient Queue System";
-      headerTextElement.textContent = "Queue";
+      if (headerTextElement) {
+        headerTextElement.textContent = "Queue";
+      } else {
+        counterStaffSelectElement.childNodes.forEach((optionElement) => {
+          optionElement.textContent = optionElement.value + " Queue";
+        });
+      }
 
       fetch("queue_management_pages/queue_management_page.php")
         .then((response) => {
@@ -458,6 +487,7 @@ function loadPage(page) {
         });
       break;
   }
+  current_page = page;
 }
 
 function showPopup(popup_data, popup_type) {
@@ -945,5 +975,42 @@ function viewRecord(id, id_type, is_add_patient) {
     })
     .catch((error) => {
       console.error("AJAX Error: ", error);
+    });
+}
+
+// ------ COUNTER SCRIPTS ------
+
+if (counterStaffSelectElement) {
+  getDepartmentQueue(counterStaffSelectElement.value);
+
+  counterStaffSelectElement.addEventListener("change", () => {
+    getDepartmentQueue(counterStaffSelectElement.value);
+    loadPage(current_page);
+  });
+}
+
+function getDepartmentQueue(selected_department) {
+  fetch("queue_management_pages/crud_php/counter_change_department.php", {
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+    body: JSON.stringify({
+      selected_department,
+    }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok/File not found");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.error) {
+        alert(`Error: ${data.error}`);
+        return;
+      }
+
+      if (data.success) {
+        loadPage(current_page);
+      }
     });
 }

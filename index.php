@@ -1,4 +1,5 @@
 <?php include_once 'global/connection.php' ?>
+<?php include_once 'queue_management_pages/crud_php/php_functions.php' ?>
 <?php session_start() ?>
 
 <?php
@@ -93,8 +94,16 @@ if (!empty($_POST)) {
       </nav>
       </nav>
       <main>
-        <header>
-          <h1>{$_SESSION['user_department']} <span id='current_page_text'>Queue</span></h1>
+        <header>";
+
+    if ($_SESSION["user_department"] !== "Counter") {
+      echo "
+        <h1>{$_SESSION['user_department']} <span id='current_page_text'>Queue</span></h1>
+        ";
+    } else {
+      generateCounterDropdown($conn);
+    }
+    echo "   
           <div class='account_info'>
             <div class='text'>
               <div class='name'>{$_SESSION['staff_name']}</div>

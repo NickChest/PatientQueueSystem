@@ -19,7 +19,7 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 try {
   $conn->begin_transaction();
   $insert_sql = "INSERT INTO tbl_queues (queue_id, patient_id, patient_name, department, added_by, added_time_and_date, is_calling)
-                 SELECT queue_id, patient_id, patient_name, department, ?, added_time_and_date, 0, 0
+                 SELECT queue_id, patient_id, patient_name, department, ?, added_time_and_date, 0
                  FROM tbl_removed
                  WHERE ID = ?";
 

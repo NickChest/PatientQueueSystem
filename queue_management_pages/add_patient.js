@@ -193,12 +193,17 @@ function generateQueueSlip(patient_queue_data) {
         <span>Numbers may not be called<br />in sequence.</span> Thank you.
       </div>
       <div class="reminder_live_queue">
-        Scan the QR code or visit<br /><span>www.HAMedCenterQueue.com</span> to
+        Scan the QR code to
         get live<br />updates on your place in queue.
       </div>
     </body>
   </html>
   `;
+
+  //   <div class="reminder_live_queue">
+  //   Scan the QR code or visit<br /><span>www.HAMedCenterQueue.com</span> to
+  //   get live<br />updates on your place in queue.
+  // </div>
 
   iframe.contentWindow.document.body.innerHTML = queueSlipHTML;
 

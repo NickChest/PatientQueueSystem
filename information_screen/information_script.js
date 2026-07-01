@@ -59,6 +59,8 @@ const serviceInfoElements = document.querySelectorAll(".service_info_group");
 let call_queue = [];
 let is_audio_playing = false;
 
+let announced_ids = [];
+
 function displayQueues(data) {
   serviceInfoElements.forEach((serviceInfoElement) => {
     serviceInfoElement.innerHTML = "";
@@ -66,12 +68,9 @@ function displayQueues(data) {
 
   for (i = 0; i < data.length; i++) {
     if (data[i].is_calling) {
-      // if the queue_id is not already in the call_queue
-      if (
-        !call_queue.some(
-          (call_group) => call_group.queue_id === data[i].queue_id,
-        )
-      ) {
+      if (!announced_ids.includes(data[i].ID)) {
+        announced_ids.push(data[i].ID);
+
         call_queue.push({
           record_id: data[i].ID,
           department: data[i].department,
@@ -94,6 +93,11 @@ function displayQueues(data) {
 }
 
 const chime_sound = new Audio("queue_chime.mp3");
+let times_played = 0;
+
+// plays the call twice, then removes
+// can be edited to only play once or 2+ times just by changing this
+let call_loop_num = 2;
 
 function playCall() {
   if (call_queue.length === 0) {
@@ -103,7 +107,8 @@ function playCall() {
 
   is_audio_playing = true;
 
-  const current_calling_patient = call_queue.shift();
+  const current_calling_patient = call_queue[0];
+
   chime_sound.play();
 
   // note: change this to audio snippets instead?
@@ -114,9 +119,19 @@ function playCall() {
     window.speechSynthesis.speak(speech);
 
     speech.onend = () => {
-      // plays the call twice, then removes
-      playCall();
-      removePatientCalling(current_calling_patient.record_id);
+      times_played++;
+
+      if (times_played < call_loop_num) {
+        playCall();
+      } else {
+        times_played = 0;
+
+        call_queue.shift();
+
+        removePatientCalling(current_calling_patient.record_id);
+
+        playCall();
+      }
     };
   };
 }
@@ -142,11 +157,7 @@ function removePatientCalling(record_id) {
       }
 
       if (data.success) {
-        setTimeout(() => {
-          playCall();
-        }, 1500);
-
-        call_queue.shift();
+        announced_ids = announced_ids.filter((id) => id !== record_id);
       }
     });
 }

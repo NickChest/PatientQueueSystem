@@ -1,19 +1,22 @@
 <?php
+// DEPARTMENTS + DEPARTMENT CODES ARE HERE
+$departments = [
+  "Hemodialysis" => "HM",
+  "Radiology" => "RD",
+  "Chemotherapy" => "CM",
+  "Hearing Test" => "HT",
+  "OR" => "OR",
+  "ER" => "ER",
+  "OPD" => "OPD",
+  "X-Ray" => "XR",
+  "Eye Center" => "EC"
+];
+
 function getExpectedQueueID(string $user_department, $conn, bool $read_only = true)
 {
-  // DEPARTMENT CODES FOR QUEUE ID HERE
-  $department_codes = [
-    "Hemodialysis" => "HM",
-    "Radiology" => "RD",
-    "Chemotherapy" => "CM",
-    "Hearing Test" => "HT",
-    "OR" => "OR",
-    "ER" => "ER",
-    "OPD" => "OPD"
-  ];
-
+  global $departments;
   // XX for unknown department
-  $dept_code = isset($department_codes[$user_department]) ? $department_codes[$user_department] : "XX";
+  $dept_code = isset($departments[$user_department]) ? $departments[$user_department] : "XX";
 
   $date_today = date("Y-m-d");
 
@@ -130,4 +133,39 @@ function flushQueue($conn)
   $flush_delete_stmt = $conn->prepare($flush_delete_sql);
   $flush_delete_stmt->execute();
   $flush_delete_stmt->close();
+}
+
+function generateCounterDropdown($conn)
+{
+  global $departments;
+
+  // $date_clause = "WHERE added_time_and_date >= CURDATE() AND added_time_and_date < CURDATE() + INTERVAL 1 DAY";
+  // if ($_SESSION["privileges"] === "admin") {
+  //   $date_clause = "";
+  // }
+
+  // $sql = "SELECT DISTINCT department from tbl_queues $date_clause ORDER BY department";
+
+  // $stmt = $conn->prepare($sql);
+  // $stmt->execute();
+  // $result = $stmt->get_result();
+
+  echo "<select id='counter_staff_select' name='counter_staff_select'>";
+
+  // while ($row = $result->fetch_assoc()) {
+  //   echo "
+  //     <option value='" . $row["department"] . "'>" . $row["department"] . " Queue</option>
+  //   ";
+  // }
+
+  asort($departments);
+  foreach ($departments as $department => $code) {
+      echo "
+        <option value='$department'>$department Queue</option>
+      ";
+  }
+
+  echo "</select>";
+  // $stmt->close();
+  // $conn->close();
 }
