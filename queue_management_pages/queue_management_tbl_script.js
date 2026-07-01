@@ -157,24 +157,9 @@ function moveDatabaseMarkCompleted(record_id, queue_id, page) {
       if (data.success) {
         clearInterval(queue_interval);
         navDimmer.classList.remove("loading");
-
-        // --- NEW: Erase the ghost HTML before recalculating ---
-        let elementToRemove;
-        if (page === "queue_m_page") {
-            elementToRemove = document.querySelector(`td[data-id="${record_id}"]`);
-            if (elementToRemove) elementToRemove.closest("tr").remove();
-        } else if (page === "focused_view") {
-            elementToRemove = document.querySelector(`.record_id[value="${record_id}"]`);
-            if (elementToRemove) {
-                if (elementToRemove.closest(".patient_summary")) {
-                    elementToRemove.closest(".patient_summary").remove();
-                } else if (elementToRemove.closest(".patient_group")) {
-                    elementToRemove.closest(".patient_group").remove();
-                }
-            }
-        }
-        // -----------------------------------------------------
         
+        // We leave the DOM completely frozen here! No .remove()!
+
         const popup_data = {
           heading: "Patient Marked Completed",
           queue_id,
@@ -184,7 +169,8 @@ function moveDatabaseMarkCompleted(record_id, queue_id, page) {
 
         showPopup(popup_data, "success_popup");
 
-        updateDatabasePlaces(page).then(() => {
+        // Pass the record_id so the calculation ignores it
+        updateDatabasePlaces(page, record_id).then(() => {
           loadPage(page);
         });
       } else {
@@ -255,26 +241,7 @@ function moveDatabaseRemovePatient(patient_info, page) {
         clearInterval(queue_interval);
         navDimmer.classList.remove("loading");
 
-        // --- NEW: Erase the ghost HTML before recalculating ---
-        let elementToRemove;
-        if (page === "queue_m_page") {
-          elementToRemove = document.querySelector(
-            `td[data-id="${patient_info["record_id"]}"]`,
-          );
-          if (elementToRemove) elementToRemove.closest("tr").remove();
-        } else if (page === "focused_view") {
-          elementToRemove = document.querySelector(
-            `.record_id[value="${patient_info["record_id"]}"]`,
-          );
-          if (elementToRemove) {
-            if (elementToRemove.closest(".patient_summary")) {
-              elementToRemove.closest(".patient_summary").remove();
-            } else if (elementToRemove.closest(".patient_group")) {
-              elementToRemove.closest(".patient_group").remove();
-            }
-          }
-        }
-        // -----------------------------------------------------
+        // We leave the DOM completely frozen here! No .remove()!
 
         popup_data = {
           heading: "Patient Removed",
@@ -283,7 +250,8 @@ function moveDatabaseRemovePatient(patient_info, page) {
 
         showPopup(popup_data, "success_popup");
 
-        updateDatabasePlaces(page).then(() => {
+        // Pass the record_id so the calculation ignores it
+        updateDatabasePlaces(page, patient_info["record_id"]).then(() => {
           loadPage(page);
         });
       } else {
@@ -417,44 +385,46 @@ function updatePlaces(rowElements) {
   });
 }
 
-function updateDatabasePlaces(page) {
+function updateDatabasePlaces(page, deleted_record_id = null) {
   let new_order = [];
 
   if (page === "queue_m_page") {
+    // gemini debugged, but most of it i wroote myself
     const newRowsOrderElements = document.querySelectorAll("tbody tr");
+    let current_place = 1;
 
-    // heavily referenced from gemini (I AM NOT VIBE CODING I AM TYPING THIS OUT MYSELF BTW)
     newRowsOrderElements.forEach((row) => {
-      const tdPlaceElement = row.firstElementChild;
+      const record_id = row.firstElementChild.dataset.id;
+
+      // SKIP the deleted record in our math!
+      if (record_id == deleted_record_id) return;
 
       new_order.push({
-        record_id: tdPlaceElement.dataset.id,
-        new_place: tdPlaceElement.textContent,
+        record_id: record_id,
+        new_place: current_place++,
       });
     });
   } else if (page === "focused_view") {
     let current_place = 1;
 
-    // 1. Grab the currently serving patient (if they exist)
-    const currentPatient = document.querySelector(
-      ".patient_summary .record_id",
-    );
-    if (currentPatient) {
+    // 1. Grab the currently serving patient
+    const currentPatient = document.querySelector(".patient_summary .record_id");
+    if (currentPatient && currentPatient.value != deleted_record_id) {
       new_order.push({
         record_id: currentPatient.value,
         new_place: current_place++,
       });
     }
 
-    // 2. Grab all upcoming patients in top-to-bottom order
-    const upcomingPatients = document.querySelectorAll(
-      ".upcoming_patients .record_id",
-    );
+    // 2. Grab all upcoming patients
+    const upcomingPatients = document.querySelectorAll(".upcoming_patients .record_id");
     upcomingPatients.forEach((patient) => {
-      new_order.push({
-        record_id: patient.value,
-        new_place: current_place++,
-      });
+      if (patient.value != deleted_record_id) {
+        new_order.push({
+          record_id: patient.value,
+          new_place: current_place++,
+        });
+      }
     });
   }
 
@@ -468,8 +438,7 @@ function updateDatabasePlaces(page) {
     })
     .then((data) => {
       if (data.success) {
-        // for debugging.
-        // alert(`Queue order updated successfully. \n(${data.updated_rows} records updated)`);
+        // Success
       } else {
         alert(`Failed to save order. Error: ` + data.error);
         navDimmer.classList.remove("loading");

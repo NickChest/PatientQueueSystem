@@ -6,8 +6,8 @@ header("Content-Type: application/json");
 $raw_data = file_get_contents("php://input");
 $new_order_data = json_decode($raw_data, true);
 
-if (!$new_order_data) {
-  echo json_encode(["success" => false, "error" => "No order data received."]);
+if ($new_order_data === null) {
+  echo json_encode(["success" => false, "error" => "Invalid or missing order data."]);
   exit();
 }
 
