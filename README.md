@@ -12,6 +12,7 @@ Made as a project for Practicum 1-2.
 - Marking of patients as completed
 - Saving of time and date data for future data mining use
 - Flushing of queue after midnight
+- "Counter" role that can view and edit all department queues
 
 ## Features to Be Added
 - OCR scanning of patient membership IDs
@@ -19,4 +20,3 @@ Made as a project for Practicum 1-2.
 - QR code generation
 - Kiosk (after approval)
 - Superadmin
-- "Counter" role that can view and edit all department queues
