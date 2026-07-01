@@ -117,7 +117,6 @@ function setQueuePageFunctions() {
     removeDraggable();
   });
 
-  updatePlaces(rowElements);
   updateDragHandles();
 
   // ----- CODE FOR MARKED COMPLETED BUTTON -----
@@ -157,8 +156,25 @@ function moveDatabaseMarkCompleted(record_id, queue_id, page) {
     .then((data) => {
       if (data.success) {
         clearInterval(queue_interval);
-        clearInterval(call_interval);
         navDimmer.classList.remove("loading");
+
+        // --- NEW: Erase the ghost HTML before recalculating ---
+        let elementToRemove;
+        if (page === "queue_m_page") {
+            elementToRemove = document.querySelector(`td[data-id="${record_id}"]`);
+            if (elementToRemove) elementToRemove.closest("tr").remove();
+        } else if (page === "focused_view") {
+            elementToRemove = document.querySelector(`.record_id[value="${record_id}"]`);
+            if (elementToRemove) {
+                if (elementToRemove.closest(".patient_summary")) {
+                    elementToRemove.closest(".patient_summary").remove();
+                } else if (elementToRemove.closest(".patient_group")) {
+                    elementToRemove.closest(".patient_group").remove();
+                }
+            }
+        }
+        // -----------------------------------------------------
+        
         const popup_data = {
           heading: "Patient Marked Completed",
           queue_id,
@@ -168,7 +184,9 @@ function moveDatabaseMarkCompleted(record_id, queue_id, page) {
 
         showPopup(popup_data, "success_popup");
 
-        loadPage(page);
+        updateDatabasePlaces(page).then(() => {
+          loadPage(page);
+        });
       } else {
         alert("Failed to move record: " + data.error);
         navDimmer.classList.remove("loading");
@@ -235,8 +253,28 @@ function moveDatabaseRemovePatient(patient_info, page) {
     .then((data) => {
       if (data.success) {
         clearInterval(queue_interval);
-        clearInterval(call_interval);
         navDimmer.classList.remove("loading");
+
+        // --- NEW: Erase the ghost HTML before recalculating ---
+        let elementToRemove;
+        if (page === "queue_m_page") {
+          elementToRemove = document.querySelector(
+            `td[data-id="${patient_info["record_id"]}"]`,
+          );
+          if (elementToRemove) elementToRemove.closest("tr").remove();
+        } else if (page === "focused_view") {
+          elementToRemove = document.querySelector(
+            `.record_id[value="${patient_info["record_id"]}"]`,
+          );
+          if (elementToRemove) {
+            if (elementToRemove.closest(".patient_summary")) {
+              elementToRemove.closest(".patient_summary").remove();
+            } else if (elementToRemove.closest(".patient_group")) {
+              elementToRemove.closest(".patient_group").remove();
+            }
+          }
+        }
+        // -----------------------------------------------------
 
         popup_data = {
           heading: "Patient Removed",
@@ -245,7 +283,9 @@ function moveDatabaseRemovePatient(patient_info, page) {
 
         showPopup(popup_data, "success_popup");
 
-        loadPage(page);
+        updateDatabasePlaces(page).then(() => {
+          loadPage(page);
+        });
       } else {
         alert("Failed to move record: " + data.error);
         navDimmer.classList.remove("loading");
@@ -393,35 +433,32 @@ function updateDatabasePlaces(page) {
       });
     });
   } else if (page === "focused_view") {
-    const patientRecordIDData = document.querySelectorAll(".record_id");
-    // console.log(patientRecordIDData.length)
+    let current_place = 1;
 
-    for (let i = 0; i < patientRecordIDData.length; i++) {
-      if (i === 0) {
-        // first in queue is "last" in html;
-        // put it in first place
-        new_order.push({
-          record_id: patientRecordIDData[patientRecordIDData.length - 1].value,
-          new_place: i + 1,
-        });
-        continue;
-      } else if (i === 1) {
-        // put the first element in html in second
-        new_order.push({
-          record_id: patientRecordIDData[0].value,
-          new_place: i + 1,
-        });
-      } else {
-        // put the rest in
-        new_order.push({
-          record_id: patientRecordIDData[i - 1].value,
-          new_place: i + 1,
-        });
-      }
+    // 1. Grab the currently serving patient (if they exist)
+    const currentPatient = document.querySelector(
+      ".patient_summary .record_id",
+    );
+    if (currentPatient) {
+      new_order.push({
+        record_id: currentPatient.value,
+        new_place: current_place++,
+      });
     }
+
+    // 2. Grab all upcoming patients in top-to-bottom order
+    const upcomingPatients = document.querySelectorAll(
+      ".upcoming_patients .record_id",
+    );
+    upcomingPatients.forEach((patient) => {
+      new_order.push({
+        record_id: patient.value,
+        new_place: current_place++,
+      });
+    });
   }
 
-  fetch("queue_management_pages/crud_php/update_places.php", {
+  return fetch("queue_management_pages/crud_php/update_places.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(new_order),

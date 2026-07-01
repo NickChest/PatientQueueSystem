@@ -1,7 +1,7 @@
 function setFocusedViewPageFunction() {
   const markedCompletedElement = document.getElementById("mark_completed");
   markedCompletedElement.addEventListener("click", () => {
-    const record_id = document.querySelector(".record_id").value;
+    const record_id = document.querySelector(".patient_summary .record_id").value;
     const queue_id =
       document.querySelectorAll(".queue_id")[
         document.querySelectorAll(".queue_id").length - 1
@@ -19,6 +19,7 @@ function setFocusedViewPageFunction() {
 
     confirmButtonElement.addEventListener("click", () => {
       moveDatabaseMarkCompleted(record_id, queue_id, "focused_view");
+      
       navDimmer.classList.add("loading");
     });
   });

@@ -1,0 +1,6 @@
+TODO
+
+time is broken when removing a patient in any way from the focused view
+(call time glitches out to null if removed patient; keeps the same time as the removed record if marked as completed)
+
+ok so this is because of updatePlaces() being broken

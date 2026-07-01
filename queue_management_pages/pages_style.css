@@ -442,6 +442,7 @@ main {
       option {
         background: var(--white-pure);
         font-size: 30px;
+        font-family: var(--font-default);
       }
     }
     select:hover {

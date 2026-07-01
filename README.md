@@ -18,5 +18,4 @@ Made as a project for Practicum 1-2.
 - OCR scanning of patient membership IDs
 - Live queue access
 - QR code generation
-- Kiosk (after approval)
 - Superadmin

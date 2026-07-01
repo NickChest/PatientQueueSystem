@@ -68,7 +68,7 @@ pageButtonElements.forEach((page_button) => {
       button.id = "null";
     }
 
-     page_button.id = "selected";
+    page_button.id = "selected";
     articleElement.className = "";
 
     let fetchedHTML = '</div class="error">Error reaasatrieving data.</div>';
@@ -95,7 +95,9 @@ function loadPage(page) {
         headerTextElement.textContent = "Queue";
       } else {
         counterStaffSelectElement.childNodes.forEach((optionElement) => {
-          optionElement.textContent = optionElement.value + " Queue";
+          if (optionElement.value) {
+            optionElement.textContent = optionElement.value + " Queue";
+          }
         });
       }
 
@@ -188,8 +190,10 @@ function loadPage(page) {
         headerTextElement.textContent = "— Completed Patients";
       } else {
         counterStaffSelectElement.childNodes.forEach((optionElement) => {
-          optionElement.textContent =
-            optionElement.value + " — Completed Patients";
+          if (optionElement.value) {
+            optionElement.textContent =
+              optionElement.value + " — Completed Patients";
+          }
         });
       }
 
@@ -261,8 +265,10 @@ function loadPage(page) {
         headerTextElement.textContent = "— Removed Patients";
       } else {
         counterStaffSelectElement.childNodes.forEach((optionElement) => {
-          optionElement.textContent =
-            optionElement.value + " — Removed Patients";
+          if (optionElement.value) {
+            optionElement.textContent =
+              optionElement.value + " — Removed Patients";
+          }
         });
       }
 
@@ -364,7 +370,9 @@ function loadPage(page) {
         headerTextElement.textContent = "Queue";
       } else {
         counterStaffSelectElement.childNodes.forEach((optionElement) => {
-          optionElement.textContent = optionElement.value + " Queue";
+          if (optionElement.value) {
+            optionElement.textContent = optionElement.value + " Queue";
+          }
         });
       }
 
