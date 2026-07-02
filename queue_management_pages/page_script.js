@@ -236,7 +236,12 @@ function loadPage(page) {
                       <th>Queue ID</th>
                       <th>Patient ID</th>
                       <th>Patient Name</th>
-                      <th>Time Marked Completed</th>
+                      <th>Time Marked Completed</th>`;
+
+          if (data[0].marked_by) {
+            fetchedHTML += "<th>Marked by</th>"
+          }
+          fetchedHTML += `
                     </tr>
                   </thead>
                   <tbody>`;
@@ -247,6 +252,10 @@ function loadPage(page) {
             fetchedHTML += `<td>${completed_patient.patient_name}</td>`;
             // time is formatted automatically by php, so "Time12"
             fetchedHTML += `<td>${completed_patient["Time12"]}</td>`;
+            // see user that marked the record as completed if admin
+            if (completed_patient.marked_by) {
+              fetchedHTML += `<td>${completed_patient.marked_by}</td>`;
+            }
             fetchedHTML += `</tr>`;
           });
           fetchedHTML += `

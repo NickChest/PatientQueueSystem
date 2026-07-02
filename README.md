@@ -13,9 +13,13 @@ Made as a project for Practicum 1-2.
 - Saving of time and date data for future data mining use
 - Flushing of queue after midnight
 - "Counter" role that can view and edit all department queues
+- QR code generation
+- Live queue access
 
 ## Features to Be Added
 - OCR scanning of patient membership IDs
-- Live queue access
-- QR code generation
 - Superadmin
+
+## Dropped Features
+- Kiosk
+  - removed due to concerns over user demographic

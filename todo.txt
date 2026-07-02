@@ -1,6 +1,6 @@
-TODO
+OCR
+SEARCH
 
-time is broken when removing a patient in any way from the focused view
-(call time glitches out to null if removed patient; keeps the same time as the removed record if marked as completed)
-
-ok so this is because of updatePlaces() being broken
+ADD "REMOVED BY" COLUMN WHEN LOOKING AT COMPLETED/REMOVED TABLE AS ADMIN
+ADD DATE WHEN LOOKING AT COMPLETED TABLE AS ADMIN
+ADD TIME AND DATE WHEN LOOKING AT REMOVED TABLE AS ADMIN

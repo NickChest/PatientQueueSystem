@@ -10,12 +10,14 @@ $user_department = $_SESSION["user_department"];
 
 // get only the records for today if not admin
 $date_clause = "AND marked_time_and_date >= CURDATE() AND marked_time_and_date < CURDATE() + INTERVAL 1 DAY";
+$user_clause = "";
 if ($_SESSION["privileges"] === "admin") {
   $date_clause = "";
+  $user_clause = "marked_by,";
 }
 
 //                                                 formats time to be hh:ss AM/PM
-$sql = "SELECT queue_id, patient_id, patient_name, TIME_FORMAT(marked_time_and_date, '%h:%i %p') AS Time12 FROM tbl_completed WHERE department = ? $date_clause ORDER BY marked_time_and_date DESC";
+$sql = "SELECT queue_id, patient_id, patient_name, $user_clause TIME_FORMAT(marked_time_and_date, '%h:%i %p') AS Time12 FROM tbl_completed WHERE department = ? $date_clause ORDER BY marked_time_and_date DESC";
 
 $stmt = $conn->prepare($sql);
 

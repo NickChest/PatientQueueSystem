@@ -1,0 +1,109 @@
+html {
+  height: 100%;
+}
+
+body {
+  background: url("../global/img/live_queue_bg.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  
+  padding: var(--page-padding-default) var(--page-padding-half);
+
+}
+@media screen and (min-width: 1000px) {
+  body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  background-position: center;
+  }
+  
+  body > * {
+    max-width: 30%;
+  }
+}
+
+/* NO QUEUE ID DATA STYLES */
+
+.logo {
+  text-align: center;
+  user-select: none;
+  pointer-events: none;
+}
+
+main {
+  padding-block: var(--page-padding-half);
+}
+
+h1 {
+  font-family: var(--font-accent);
+  font-size: 40px;
+  margin-bottom: var(--page-padding-half);
+}
+
+p {
+  font-size: 25px;
+  margin-bottom: var(--page-padding-default);
+}
+span.bolded {
+  font-weight: bold;
+}
+
+.message {
+  font-size: 25px;
+  color: var(--red-default);
+}
+.message:not(.empty) {
+  margin-bottom: 10px;
+}
+
+input {
+  font-size: 30px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  width: 100%;
+}
+
+button {
+  width: 100%;
+}
+
+.legal {
+  color: var(--shadow-default);
+  text-align: center;
+}
+a {
+  color: inherit;
+}
+
+/* WAITING PAGE STYLES */
+
+.waiting_main {
+  text-align: center;
+  font-family: var(--font-accent);
+  font-size: 40px;
+  line-height: 4ch;
+  margin-bottom: var(--page-padding-half);
+}
+.waiting_main span {
+  display: block;
+  font-size: 150px;
+}
+
+.waiting,
+.queue_id_caption {
+  text-align: center;
+  font-size: 25px;
+}
+
+.queue_id_caption {
+  margin-top: var(--page-padding-half);
+}
+
+.queue_id {
+  font-weight: bold;
+  text-align: center;
+  font-size: 50px;
+}

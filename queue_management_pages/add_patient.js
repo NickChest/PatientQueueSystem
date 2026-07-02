@@ -96,11 +96,12 @@ function addDatabasePatient(record_id) {
 }
 
 function generateQueueSlip(patient_queue_data) {
+  // GENERATE QUEUE SLIP AND QR CODE
   const iframe = document.createElement("iframe");
   iframe.style.display = "none";
   document.body.appendChild(iframe);
   const server_ip = window.location.hostname;
-  const tracking_url = `http://${server_ip}/PatientQueueSystem/index.php`;
+  const tracking_url = `http://${server_ip}/PatientQueueSystem/livequeue/live_queue.php?queue_id=${patient_queue_data.queue_id}`;
 
   const tempDivElement = document.createElement("div");
 
