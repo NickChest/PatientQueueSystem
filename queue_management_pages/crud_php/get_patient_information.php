@@ -1,12 +1,21 @@
 <?php
 include "../../global/patient_database_connection.php";
+session_start();
 
 header("Content-Type: application/json");
+
+// check if user is logged in before doing anything
+if (!isset($_SESSION["username"])) {
+  http_response_code(401);
+  echo json_encode(["success" => false, "error" => "Not logged in."]);
+  exit();
+}
 
 $raw_data = file_get_contents("php://input");
 $record_id_data = json_decode($raw_data, true);
 
 if (!isset($record_id_data["patient_record_id"]) && !isset($record_id_data["patient_id"])) {
+  http_response_code(400);
   echo json_encode(["success" => false, "error" => "No record ID data received."]);
   exit();
 }

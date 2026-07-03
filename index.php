@@ -20,6 +20,7 @@ if (!empty($_POST)) {
       if (password_verify($_POST["password"], $user["password_hash"])) {
         $_SESSION["username"] = $user["username"];
         $_SESSION["user_department"] = $user["department"];
+        $_SESSION["viewing_department"] = $user["department"];
         $_SESSION["privileges"] = $user["privileges"];
         $_SESSION["staff_name"] = $user["staff_name"];
       } else {
@@ -102,13 +103,14 @@ if (!empty($_POST)) {
         <h1>{$_SESSION['user_department']} <span id='current_page_text'>Queue</span></h1>
         ";
     } else {
-      generateCounterDropdown($conn);
+      generateCounterDropdown();
     }
     echo "   
           <div class='account_info'>
             <div class='text'>
               <div class='name'>{$_SESSION['staff_name']}</div>
               <div class='department'>{$_SESSION['user_department']} " . ucfirst($_SESSION['privileges']) . "</div>
+              <input type='hidden' name='user_department' id='user_department' value={$_SESSION['user_department']}>
             </div>
             <img src='global/img/account.png' alt='' />
           </div>

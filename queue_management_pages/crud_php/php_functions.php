@@ -135,7 +135,7 @@ function flushQueue($conn)
   $flush_delete_stmt->close();
 }
 
-function generateCounterDropdown($conn)
+function generateCounterDropdown()
 {
   global $departments;
 

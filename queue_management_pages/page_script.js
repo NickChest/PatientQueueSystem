@@ -55,7 +55,43 @@ const headerTextElement = document.querySelector("#current_page_text");
 const counterStaffSelectElement = document.querySelector(
   "#counter_staff_select",
 );
-let current_page = "queue_m_page"; // only used for when user role is "Counter"
+
+let first_loaded_page = "queue_m_page";
+
+// get url from browser
+const query_string = window.location.search;
+
+// get search parameters
+const url_params = new URLSearchParams(query_string);
+
+if (url_params.has("page")) {
+  first_loaded_page = url_params.get("page");
+
+  // if get page link isn't real, default to queue_m_page
+  if (
+    ![
+      "queue_m_page",
+      "completed_pm_page",
+      "removed_pm_page",
+      "focused_view",
+    ].includes(first_loaded_page)
+  ) {
+    first_loaded_page = "queue_m_page";
+    const cleanUrl = window.location.pathname;
+    history.replaceState(history.state, "", cleanUrl);
+  }
+
+  pageButtonElements.forEach((page_button) => {
+    page_button.id = null;
+    if (page_button.dataset.page === first_loaded_page) {
+      page_button.id = "selected";
+    }
+  });
+}
+
+loadPage(first_loaded_page);
+
+let current_page = first_loaded_page; // used for when user role is "Counter" and for search
 
 pageButtonElements.forEach((page_button) => {
   page_button.addEventListener("click", () => {
@@ -65,7 +101,7 @@ pageButtonElements.forEach((page_button) => {
     // are updating a single queue at once (which doesn't really make sense)
 
     for (const button of pageButtonElements) {
-      button.id = "null";
+      button.id = null;
     }
 
     page_button.id = "selected";
@@ -81,11 +117,22 @@ pageButtonElements.forEach((page_button) => {
 
     const page = page_button.dataset.page;
 
+    const new_url_params = new URLSearchParams(window.location.search);
+
+    if (new_url_params.has("page")) {
+      // 1. Grab just the base URL path (e.g., "/PatientQueueSystem/index.php")
+      // This automatically ignores everything after the "?"
+      const cleanUrl = window.location.pathname;
+
+      // 2. Push the clean URL to the browser
+      window.history.pushState(null, "", cleanUrl);
+    }
+
+    // 3. Load the new page
+    current_page = page;
     loadPage(page);
   });
 });
-
-loadPage("queue_m_page");
 
 function loadPage(page) {
   switch (page) {
@@ -129,10 +176,10 @@ function loadPage(page) {
           }
 
           fetchedHTML = `
-              <form action="" method="get" class="search">
+              <form action="" method="get" class="search" id="search_form">
                 <fieldset>
                   <label for="search">Search by Patient ID/Queue ID/Name</label>
-                  <input type="search" name="search" id="search" />
+                  <input type="search" name="query" id="search" autocomplete="off"/>
                 </fieldset>
               </form>
             `;
@@ -165,6 +212,7 @@ function loadPage(page) {
           fetchedHTML += `<button class="add_patient button-default bg-green" id="add_patient">Add Patient</button>`;
 
           articleElement.innerHTML = fetchedHTML;
+          setSearchFunction(page);
           const tbodyElement = document.querySelector("tbody");
           const rowElements = tbodyElement.children;
 
@@ -219,14 +267,22 @@ function loadPage(page) {
           }
 
           fetchedHTML = `
-              <form action="" method="get" class="search">
+              <form action="" method="get" class="search" id="search_form">
                 <fieldset>
                   <label for="search">Search by Patient ID/Queue ID/Name</label>
-                  <input type="search" name="search" id="search" />
+                  <input type="search" name="query" id="search" autocomplete="off"/>
                 </fieldset>
-                <fieldset>
-                  <label for="time">Time</label>
-                  <input type="time" name="time" id="time" />
+                <fieldset>`;
+
+          if (data[0].marked_by) {
+            // give date selector if admin
+            fetchedHTML += `
+              <label for="date">Date</label>
+              <input type="date" name="date" id="date" />
+            `;
+          }
+
+          fetchedHTML += `
                 </fieldset>
               </form>
               <div class="table completed">
@@ -239,7 +295,7 @@ function loadPage(page) {
                       <th>Time Marked Completed</th>`;
 
           if (data[0].marked_by) {
-            fetchedHTML += "<th>Marked by</th>"
+            fetchedHTML += "<th>Marked by</th>";
           }
           fetchedHTML += `
                     </tr>
@@ -265,8 +321,8 @@ function loadPage(page) {
             `;
 
           articleElement.innerHTML = fetchedHTML;
+          setSearchFunction(page);
         });
-
       break;
     case "removed_pm_page":
       document.title = "Removed Patients | Patient Queue System";
@@ -303,21 +359,21 @@ function loadPage(page) {
           }
 
           fetchedHTML = `
-              <form action="" method="get" class="search">
+              <form action="" method="get" class="search" id="search_form">
                 <fieldset>
                   <label for="search">Search by Patient ID/Queue ID/Name</label>
-                  <input type="search" name="search" id="search" />
+                  <input type="search" name="query" id="search" autocomplete="off"/>
                 </fieldset>
                 <fieldset>
+                  <label for="reason">Reason</label>
                   <select name="reason" id="reason">
-                    <option value="" disabled selected>Reason</option>`;
+                    <option value="all" selected>Any Reason</option>`;
 
           let reasons_array = [];
           data.forEach((removed_patient) => {
             if (!reasons_array.includes(removed_patient.reason)) {
               fetchedHTML += `<option value="${removed_patient.reason}">${removed_patient.reason}</option>`;
               reasons_array.push(removed_patient.reason);
-              console.log(reasons_array);
             } else return;
           });
 
@@ -370,8 +426,10 @@ function loadPage(page) {
           fetchedHTML += `</div>`;
 
           articleElement.innerHTML = fetchedHTML;
+          setSearchFunction(page);
           addRestoreFunction();
         });
+
       break;
     case "focused_view":
       document.title = "Focused View | Patient Queue System";
@@ -504,7 +562,6 @@ function loadPage(page) {
         });
       break;
   }
-  current_page = page;
 }
 
 function showPopup(popup_data, popup_type) {
@@ -1001,6 +1058,17 @@ if (counterStaffSelectElement) {
   getDepartmentQueue(counterStaffSelectElement.value);
 
   counterStaffSelectElement.addEventListener("change", () => {
+    const new_url_params = new URLSearchParams(window.location.search);
+
+    if (new_url_params.has("page")) {
+      // 1. Grab just the base URL path (e.g., "/PatientQueueSystem/index.php")
+      // This automatically ignores everything after the "?"
+      const cleanUrl = window.location.pathname;
+
+      // 2. Push the clean URL to the browser
+      window.history.pushState(null, "", cleanUrl);
+    }
+
     getDepartmentQueue(counterStaffSelectElement.value);
     loadPage(current_page);
   });
@@ -1030,4 +1098,153 @@ function getDepartmentQueue(selected_department) {
         loadPage(current_page);
       }
     });
+}
+
+// ------ SEARCH FUNCTIONS ------
+
+function setSearchFunction(page) {
+  const searchInputElement = document.getElementById("search");
+  const searchFormElement = document.getElementById("search_form");
+  const searchFilterElement =
+    document.getElementById("date") || document.getElementById("reason");
+
+  if (searchFilterElement) {
+    searchFilterElement.addEventListener("change", () => {
+      const filter_data = {
+        parameter: searchFilterElement.id,
+        value: searchFilterElement.value,
+      };
+      const query_value = document.querySelector("#search_form input").value;
+
+      searchDatabaseRecords(query_value, page, filter_data);
+    });
+  }
+
+  // fill values with get url parameters
+  const current_url_params = new URLSearchParams(window.location.search);
+
+  if (current_url_params.has("query")) {
+    searchInputElement.value = current_url_params.get("query");
+  }
+
+  if (current_url_params.has("date")) {
+    searchFilterElement.value = current_url_params.get("date");
+  }
+
+  if (current_url_params.has("reason")) {
+    searchFilterElement.value = current_url_params.get("reason");
+  }
+
+  if (counterStaffSelectElement) {
+    if (current_url_params.has("department")) {
+      counterStaffSelectElement.value = current_url_params.get("department");
+      getDepartmentQueue(counterStaffSelectElement.value);
+    }
+  }
+
+  searchFormElement.addEventListener("submit", (e) => {
+    e.preventDefault();
+    let filter_data = null;
+
+    if (searchFilterElement) {
+      console.log("i'm in");
+      filter_data = {
+        parameter: searchFilterElement.id,
+        value: searchFilterElement.value,
+      };
+    }
+
+    const query_value = document.querySelector("#search_form input").value;
+    searchDatabaseRecords(query_value, page, filter_data);
+  });
+}
+
+function searchDatabaseRecords(query, page, filter_data) {
+  const params = new URLSearchParams();
+  // gemini simplification of the longest if statement i have ever written
+
+  // 1. Define exactly what constitutes an "active search"
+  const hasDate = filter_data?.parameter === "date" && filter_data?.value;
+  const hasSpecificReason =
+    filter_data?.parameter === "reason" && filter_data?.value !== "all";
+  const isSearching = query || hasDate || hasSpecificReason;
+
+  // 2. Early Exit: If they aren't searching, just reload and stop running this code immediately
+  if (!isSearching) {
+    return loadPage(page);
+  }
+
+  // 3. If we made it here, we KNOW a search is happening. Safely append our parameters.
+  if (query) {
+    params.append("query", query);
+
+    // add department if they're a counter user
+    if (counterStaffSelectElement) {
+      params.append("department", counterStaffSelectElement.value);
+    } else {
+      const user_department = document.querySelector(
+        "input#user_department",
+      ).value;
+      params.append("department", user_department);
+    }
+  }
+
+  // Append the filter data (handling the specific "reason=all" edge case you wanted)
+  if (filter_data?.value) {
+    const { parameter, value } = filter_data;
+
+    if (
+      parameter === "date" ||
+      (parameter === "reason" && (value !== "all" || query))
+    ) {
+      params.append(parameter, value);
+    }
+  }
+
+  // Since we already proved isSearching is true in step 2, we can blindly append the page!
+  params.append("page", page);
+
+  // // search flag to say whether or not user is just clearing the search parameters
+  // let search_flag = false;
+
+  // // only append if a user typed in a query
+  // if (query) {
+  //   params.append("query", query);
+  //   search_flag = true;
+  // }
+
+  // // only append if a value exists
+  // if (filter_data && filter_data.value) {
+  //   // if it's for the date, append it
+  //   if (filter_data.parameter === "date") {
+  //     params.append(filter_data.parameter, filter_data.value);
+  //     search_flag = true;
+  //   } else if (filter_data.parameter === "reason") {
+  //     // only append the reason (including "all") if the query is not blank; else they're just clearing the search (since all reasons with no query is just the regular list)
+  //     if (filter_data.value !== "all") {
+  //       params.append(filter_data.parameter, filter_data.value);
+  //       search_flag = true;
+  //     } else {
+  //       if (query) {
+  //         params.append(filter_data.parameter, filter_data.value);
+  //       }
+  //     }
+  //   }
+  // }
+
+  // // only append page if user is actually searching
+  // if (search_flag) params.append("page", page);
+
+  // // if search flag is still false, user is just reloading the page
+  // if (!search_flag) {
+  //   loadPage(page)
+  //   return;
+  // }
+
+  const params_query_string = params.toString();
+  const new_url = params_query_string
+    ? `?${params_query_string}`
+    : window.location.pathname;
+
+  window.history.pushState({ path: new_url }, "", new_url);
 }

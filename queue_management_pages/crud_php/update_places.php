@@ -1,12 +1,20 @@
 <?php
 include "../../global/connection.php";
-
+session_start();
 header("Content-Type: application/json");
+
+// check if user is logged in before doing anything
+if (!isset($_SESSION["username"])) {
+  http_response_code(401);
+  echo json_encode(["success" => false, "error" => "Not logged in."]);
+  exit();
+}
 
 $raw_data = file_get_contents("php://input");
 $new_order_data = json_decode($raw_data, true);
 
 if ($new_order_data === null) {
+  http_response_code(400);
   echo json_encode(["success" => false, "error" => "Invalid or missing order data."]);
   exit();
 }
@@ -27,14 +35,14 @@ foreach ($new_order_data as $order_data) {
     $primary_key = (int)$order_data["record_id"];
     $called_time_and_date = null;
     $is_calling = 0;
-    
+
     if ($place === 1 || (count($order_data) === 1)) {
       $called_time_and_date = date('Y-m-d H:i:s');
       $is_calling = 1;
     }
-    
+
     $stmt->bind_param("isiii", $place, $called_time_and_date, $is_calling, $primary_key, $place);
-    
+
     if ($stmt->execute()) {
       $num_updated_records += $stmt->affected_rows;
     }

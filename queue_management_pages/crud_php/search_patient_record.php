@@ -1,16 +1,30 @@
 <?php
-session_start();
 include "../../global/patient_database_connection.php";
 include "../../global/connection.php";
 include "php_functions.php";
+session_start();
 
 header("Content-Type: application/json");
+
+// check if user is logged in before doing anything
+if (!isset($_SESSION["username"])) {
+  http_response_code(401);
+  echo json_encode(["success" => false, "error" => "Not logged in."]);
+  exit();
+}
 
 $raw_data = file_get_contents("php://input");
 $query_data = json_decode($raw_data, true);
 
-$user_department = $_SESSION["user_department"];
+$user_department = $_SESSION["viewing_department"] ?? $_SESSION["user_department"];
 $user_privileges = $_SESSION["privileges"];
+
+
+if (empty($user_department)) {
+  http_response_code(400);
+  echo json_encode(["success" => false, "error" => "Missing department."]);
+  exit();
+}
 
 $query = "patient_id = ?";
 $params = "i";

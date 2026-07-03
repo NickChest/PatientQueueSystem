@@ -700,6 +700,7 @@ main {
         width: 600px;
       }
       fieldset:last-child select {
+        display: block;
         padding-right: 20ch;
         font-size: inherit;
         font-family: inherit;

@@ -1,7 +1,14 @@
 <?php
-session_start();
 include "../../global/connection.php";
 header("Content-Type: application/json");
+session_start();
+
+// check if user is logged in before doing anything
+if (!isset($_SESSION["username"])) {
+  http_response_code(401);
+  echo json_encode(["success" => false, "error" => "Not logged in."]);
+  exit();
+}
 
 $username = $_SESSION["username"];
 
@@ -9,7 +16,8 @@ $username = $_SESSION["username"];
 $raw_data = file_get_contents("php://input");
 $record_id_data = json_decode($raw_data, true);
 
-if (!isset($record_id_data["record_id"])) {
+if (empty($record_id_data)) {
+  http_response_code(400);
   echo json_encode(["success" => false, "error" => "No record ID provided."]);
   exit();
 }
