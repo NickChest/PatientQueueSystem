@@ -12,6 +12,7 @@ $stmt = $conn->prepare($sql);
 if (!$stmt) {
   header("Content-Type: application/json");
   echo json_encode(["error" => "Database error: " . $conn->error]);
+  exit();
 }
 
 $stmt->execute();

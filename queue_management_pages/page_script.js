@@ -1022,6 +1022,17 @@ function showPopup(popup_data, popup_type) {
             resetPopupDimmer();
           }
         });
+
+      // thing for the add patient button when expanding the patient info
+      if (popup_data.is_add_patient) {
+        const infoAddPatientElement = document.querySelector(
+          "#add_patient_to_queue",
+        );
+
+        infoAddPatientElement.addEventListener("click", () => {
+          addDatabasePatient(infoAddPatientElement.dataset.id);
+        });
+      }
       break;
   }
 
@@ -1203,43 +1214,6 @@ function searchDatabaseRecords(query, page, filter_data) {
 
   // Since we already proved isSearching is true in step 2, we can blindly append the page!
   params.append("page", page);
-
-  // // search flag to say whether or not user is just clearing the search parameters
-  // let search_flag = false;
-
-  // // only append if a user typed in a query
-  // if (query) {
-  //   params.append("query", query);
-  //   search_flag = true;
-  // }
-
-  // // only append if a value exists
-  // if (filter_data && filter_data.value) {
-  //   // if it's for the date, append it
-  //   if (filter_data.parameter === "date") {
-  //     params.append(filter_data.parameter, filter_data.value);
-  //     search_flag = true;
-  //   } else if (filter_data.parameter === "reason") {
-  //     // only append the reason (including "all") if the query is not blank; else they're just clearing the search (since all reasons with no query is just the regular list)
-  //     if (filter_data.value !== "all") {
-  //       params.append(filter_data.parameter, filter_data.value);
-  //       search_flag = true;
-  //     } else {
-  //       if (query) {
-  //         params.append(filter_data.parameter, filter_data.value);
-  //       }
-  //     }
-  //   }
-  // }
-
-  // // only append page if user is actually searching
-  // if (search_flag) params.append("page", page);
-
-  // // if search flag is still false, user is just reloading the page
-  // if (!search_flag) {
-  //   loadPage(page)
-  //   return;
-  // }
 
   const params_query_string = params.toString();
   const new_url = params_query_string

@@ -63,10 +63,14 @@ if (isset($_GET["queue_id"])) {
       <div class='waiting_main'>You are number
         <span>$place</span>
         in line.
-      </div>
+      </div>";
   
-      <div class='waiting'>There " . ($waiting > 1 ? "are" : "is") . " <span class='bolded'>$waiting " . ($waiting > 1 ? "people" : "person") . "</span> in the queue.</div>
-      <div class='queue_id_caption'>Your <span class='bolded'>Queue ID</span> is</div>
+      if ($place === 1) {
+        echo "<div class='waiting'><span class='bolded'>Please proceed to your assigned counter or department.</span> Thank you.</div>";
+      } else {
+        echo "<div class='waiting'>There are <span class='bolded'>$waiting people</span> in the queue.</div>";
+      }
+      echo "<div class='queue_id_caption'>Your <span class='bolded'>Queue ID</span> is</div>
       <div class='queue_id'>$queue_id</div>
     </main>
     ";

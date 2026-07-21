@@ -63,6 +63,9 @@ function addPatientRecordSearch(search_query) {
 function addDatabasePatient(record_id) {
   navDimmer.classList.add("loading");
 
+  // reload page BEFORE adding so the queue reflects the latest version on the database (this is in case another user changed the places)
+  loadPage("queue_m_page");
+
   fetch("queue_management_pages/crud_php/add_patient_to_queue.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -83,8 +86,7 @@ function addDatabasePatient(record_id) {
         showPopup(popup_data, "success_popup");
         generateQueueSlip(data);
 
-        // for now, users can only add patients on the patients management page
-        // i mean there's no indication anyways that you can add a patient on the focused view unless there are no patients
+        // users can only add patients on the queue management page
         loadPage("queue_m_page");
       } else {
         alert("Failed to add patient to queue: " + data.error);
@@ -138,7 +140,7 @@ function generateQueueSlip(patient_queue_data) {
 
             body {
               width: 4.25in;
-              height: 5.5in;
+              height: 6.5in;
               margin: 0;
               padding: 0.25in; /* Safe padding so text doesn't touch the paper edge */
               box-sizing: border-box;
@@ -146,6 +148,10 @@ function generateQueueSlip(patient_queue_data) {
               font-size: 10pt; /* Points (pt) are best for readable printed text */
               text-align: center;
               font-family: "Inconsolata", Consolas;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
             }
             h1,
             h2,

@@ -30,6 +30,7 @@ $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
   echo json_encode(["error" => "Database error: " . $conn->error]);
+  exit();
 }
 
 $stmt->bind_param("s", $user_department);

@@ -7,7 +7,7 @@ $message = "";
 
 if (!empty($_POST)) {
   if (isset($_POST["username"]) && isset($_POST["password"])) {
-    $sql = "SELECT * FROM tbl_users WHERE username = ?";
+    $sql = "SELECT * FROM tbl_users WHERE BINARY username = ?";
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $_POST["username"]);
