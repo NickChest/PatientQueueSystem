@@ -210,8 +210,9 @@ function generateQueueSlip(patient_queue_data) {
             <span>Numbers may not be called<br />in sequence.</span> Thank you.
           </div>
           <div class="reminder_live_queue">
-            Scan the QR code to
-            get live<br />updates on your place in queue.
+            <span>Connect to our hospital Wi-Fi</span> and <br />
+            <span>scan the QR code</span> to get live <br />
+            updates on your place in queue.
           </div>
         </body>
       </html>

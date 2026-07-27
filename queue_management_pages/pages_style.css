@@ -452,7 +452,6 @@ main {
       outline: none;
     }
 
-
     .account_info {
       display: flex;
       align-items: center;
@@ -622,6 +621,13 @@ main {
               cursor: grabbing;
             }
           }
+
+          tr.search_result {
+            .drag_handle {
+              pointer-events: none;
+              opacity: 0.14;
+            }
+          }
         }
         tbody:has(.dragging) {
           .actions button {
@@ -715,6 +721,12 @@ main {
         button {
           font-size: 20px;
         }
+      }
+    }
+
+    .table {
+      .no_results_element {
+        font-size: 30px;
       }
     }
 

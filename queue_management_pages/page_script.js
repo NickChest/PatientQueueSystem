@@ -22,6 +22,15 @@ function formatTimeMStoHHMMSS(miliseconds) {
 
 let queue_interval;
 
+function clearURLSearchParams() {
+  // 1. Grab just the base URL path (e.g., "/PatientQueueSystem/index.php")
+  // This automatically ignores everything after the "?"
+  const cleanUrl = window.location.pathname;
+
+  // 2. Push the clean URL to the browser
+  window.history.pushState(null, "", cleanUrl);
+}
+
 function updateTimeElements(queue_time, call_time) {
   // clear interval before starting another one
   clearInterval(queue_interval);
@@ -77,8 +86,7 @@ if (url_params.has("page")) {
     ].includes(first_loaded_page)
   ) {
     first_loaded_page = "queue_m_page";
-    const cleanUrl = window.location.pathname;
-    history.replaceState(history.state, "", cleanUrl);
+    clearURLSearchParams();
   }
 
   pageButtonElements.forEach((page_button) => {
@@ -120,12 +128,7 @@ pageButtonElements.forEach((page_button) => {
     const new_url_params = new URLSearchParams(window.location.search);
 
     if (new_url_params.has("page")) {
-      // 1. Grab just the base URL path (e.g., "/PatientQueueSystem/index.php")
-      // This automatically ignores everything after the "?"
-      const cleanUrl = window.location.pathname;
-
-      // 2. Push the clean URL to the browser
-      window.history.pushState(null, "", cleanUrl);
+      clearURLSearchParams();
     }
 
     // 3. Load the new page
@@ -277,7 +280,7 @@ function loadPage(page) {
           if (data[0].marked_by) {
             // give date selector if admin
             fetchedHTML += `
-              <label for="date">Date</label>
+              <label for="date">Date Completed</label>
               <input type="date" name="date" id="date" />
             `;
           }
@@ -389,7 +392,12 @@ function loadPage(page) {
                   <th>Queue ID</th>
                   <th>Patient ID</th>
                   <th>Patient Name</th>
-                  <th>Reason</th>
+                  <th>Reason</th>`;
+          if (data[0].removed_by) {
+            // if admin, see who removed the record
+            fetchedHTML += "<th>Removed by</th>";
+          }
+          fetchedHTML += `
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -401,6 +409,10 @@ function loadPage(page) {
             fetchedHTML += `<td>${removed_patient.patient_id}</td>`;
             fetchedHTML += `<td>${removed_patient.patient_name}</td>`;
             fetchedHTML += `<td>${removed_patient.reason}</td>`;
+            if (data[0].removed_by) {
+              // if admin, see who removed the record
+              fetchedHTML += `<td>${removed_patient.removed_by}</td>`;
+            }
 
             if (
               removed_patient.is_today &&
@@ -1072,12 +1084,7 @@ if (counterStaffSelectElement) {
     const new_url_params = new URLSearchParams(window.location.search);
 
     if (new_url_params.has("page")) {
-      // 1. Grab just the base URL path (e.g., "/PatientQueueSystem/index.php")
-      // This automatically ignores everything after the "?"
-      const cleanUrl = window.location.pathname;
-
-      // 2. Push the clean URL to the browser
-      window.history.pushState(null, "", cleanUrl);
+      clearURLSearchParams();
     }
 
     getDepartmentQueue(counterStaffSelectElement.value);
@@ -1182,6 +1189,7 @@ function searchDatabaseRecords(query, page, filter_data) {
 
   // 2. Early Exit: If they aren't searching, just reload and stop running this code immediately
   if (!isSearching) {
+    clearURLSearchParams();
     return loadPage(page);
   }
 
@@ -1221,4 +1229,81 @@ function searchDatabaseRecords(query, page, filter_data) {
     : window.location.pathname;
 
   window.history.pushState({ path: new_url }, "", new_url);
+
+  if (page === "queue_m_page") {
+    searchQueueManagementPageRecords(query);
+  } else {
+    searchDatabaseRecords(query_value, page, filter_data);
+  }
+}
+
+function searchQueueManagementPageRecords(query) {
+  query = query.toLowerCase();
+
+  const addPatientButtonElement = document.getElementById("add_patient");
+  addPatientButtonElement.style.display = "none";
+
+  const tableBodyElement = document.querySelector(".table.queue tbody");
+  const rowElements = tableBodyElement.querySelectorAll("tr");
+  let visible_rows_num = 0;
+
+  rowElements.forEach((row) => {
+    const queue_id = row.cells[1].textContent.toLowerCase();
+    const patient_id = row.cells[2].textContent.toLowerCase();
+    const patient_name = row.cells[3].textContent.toLowerCase();
+
+    if (
+      queue_id.includes(query) ||
+      patient_id.includes(query) ||
+      patient_name.includes(query)
+    ) {
+      row.style.display = "";
+      row.classList.add("search_result");
+      row.classList.remove("search_hide");
+      visible_rows_num++;
+
+      // fix stripes
+      if (visible_rows_num % 2 === 0) {
+        row.style.background = "var(--_bg-accent)";
+      } else {
+        if (row !== rowElements[0]) {
+          row.style.background = "var(--_bg)";
+        }
+      }
+    } else {
+      row.style.display = "none";
+      row.classList.remove("search_result");
+      row.classList.add("search_hide");
+    }
+  });
+
+  const tableDivElement = document.querySelector(".table.queue");
+  const tableElement = document.querySelector(".table.queue table");
+  let noResultsMessageElement = tableDivElement.querySelector(
+    ".no_results_element",
+  );
+
+  if (visible_rows_num === 0) {
+    if (!noResultsMessageElement) {
+      noResultsMessageElement = document.createElement("div");
+      noResultsMessageElement.className = "no_results_element";
+      noResultsMessageElement.textContent = "No matching queued records found.";
+      tableDivElement.appendChild(noResultsMessageElement);
+    }
+
+    tableElement.style.display = "none";
+
+    tableDivElement.style.display = "flex";
+    tableDivElement.style.alignItems = "center";
+    tableDivElement.style.justifyContent = "center";
+
+    noResultsMessageElement.style.display = "";
+  } else {
+    tableElement.style.display = "";
+    tableDivElement.style.display = "";
+    tableDivElement.style.alignItems = "";
+    tableDivElement.style.justifyContent = "";
+
+    if (noResultsMessageElement) noResultsMessageElement.style.display = "none";
+  }
 }

@@ -20,11 +20,13 @@ if (empty($user_department)) {
 
 // get only the records for today if not admin
 $date_clause = "AND removed_time_and_date >= CURDATE() AND removed_time_and_date < CURDATE() + INTERVAL 1 DAY AND reason != 'Auto-flushed: Day has passed'";
+$removed_by = "";
 if ($_SESSION["privileges"] === "admin") {
   $date_clause = "";
+  $removed_by = ", removed_by";
 }
 
-$sql = "SELECT ID, queue_id, patient_id, patient_name, reason, removed_time_and_date FROM tbl_removed WHERE department = ? $date_clause ORDER BY removed_time_and_date DESC";
+$sql = "SELECT ID, queue_id, patient_id, patient_name, reason, removed_time_and_date $removed_by FROM tbl_removed WHERE department = ? $date_clause ORDER BY removed_time_and_date DESC";
 
 $stmt = $conn->prepare($sql);
 
