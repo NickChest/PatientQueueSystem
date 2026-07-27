@@ -175,7 +175,7 @@ function loadPage(page) {
             return;
           }
 
-          fetchedHTML = `
+          let basisHTML = `
               <form action="" method="get" class="search" id="search_form">
                 <fieldset>
                   <label for="search">Search by Patient ID/Queue ID/Name</label>
@@ -183,35 +183,14 @@ function loadPage(page) {
                 </fieldset>
               </form>
             `;
-          fetchedHTML += `<div class="table queue">`;
-          fetchedHTML += `<table>`;
-          fetchedHTML += `
-              <thead>
-                <tr>
-                  <th>Place</th>
-                  <th>Queue ID</th>
-                  <th>Patient ID</th>
-                  <th>Patient Name</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-            `;
-          fetchedHTML += "<tbody>";
-          data.forEach((patient) => {
-            fetchedHTML += `<tr>`;
-            fetchedHTML += `<td data-id="${patient.ID}">${patient.place}</td>`;
-            fetchedHTML += `<td>${patient.queue_id}</td>`;
-            fetchedHTML += `<td>${patient.patient_id}</td>`;
-            fetchedHTML += `<td>${patient.patient_name}</td>`;
-            fetchedHTML += `<td></td>`; // for actions (gets filled automatically by js function)
-            fetchedHTML += `</tr>`;
-          });
-          fetchedHTML += "</tbody>";
-          fetchedHTML += `</table>`;
-          fetchedHTML += `</div>`;
-          fetchedHTML += `<button class="add_patient button-default bg-green" id="add_patient">Add Patient</button>`;
+          basisHTML += `<div class="table queue">`;
+          basisHTML += `</div>`;
+          basisHTML += `<button class="add_patient button-default bg-green" id="add_patient">Add Patient</button>`;
 
-          articleElement.innerHTML = fetchedHTML;
+          articleElement.innerHTML = basisHTML;
+          const tableElement = document.querySelector(".table.queue");
+          formatTable(page, data, tableElement)
+
           setSearchFunction(page);
           const tbodyElement = document.querySelector("tbody");
           const rowElements = tbodyElement.children;
@@ -824,7 +803,6 @@ function showPopup(popup_data, popup_type) {
         });
       break;
     case "multiple_records_select":
-      console.log(popup_data);
       let formatted_query = popup_data.query["last_name"].toUpperCase();
       if (popup_data.query["first_name"]) {
         formatted_query += `, ${popup_data.query["first_name"].toUpperCase()}`;
@@ -1182,6 +1160,8 @@ function searchDatabaseRecords(query, page, filter_data) {
 
   // 2. Early Exit: If they aren't searching, just reload and stop running this code immediately
   if (!isSearching) {
+    const cleanUrl = window.location.pathname;
+    window.history.pushState(null, "", cleanUrl);
     return loadPage(page);
   }
 
@@ -1221,4 +1201,70 @@ function searchDatabaseRecords(query, page, filter_data) {
     : window.location.pathname;
 
   window.history.pushState({ path: new_url }, "", new_url);
+
+  // fetch search file and append params
+  fetch(`queue_management_pages/crud_php/get_search.php?${params_query_string}`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok/File now found");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.error) {
+        alert(`Error: ${data.error}`);
+        return;
+      }
+      const tableElement = document.querySelector("div.table");
+
+      if (data.length === 0) {
+        tableElement.className = "table no_results";
+        tableElement.innerHTML = `
+          <div class="no_result_message">No matching patient records found.</div>
+        `;
+        return;
+      }
+
+      // if results found, reload table data
+      formatTable(current_page, data, tableElement);
+    });
+}
+
+function formatTable(page, data, tableElement) {
+  let fetchedHTML = "";
+  // "queue", "removed", or "completed"
+  const table_format = current_page.split("_")[0];
+  tableElement.className = `table ${table_format}`;
+
+  switch (page) {
+    case "queue_m_page":
+      fetchedHTML += `<table>`;
+      fetchedHTML += `
+          <thead>
+            <tr>
+              <th>Place</th>
+              <th>Queue ID</th>
+              <th>Patient ID</th>
+              <th>Patient Name</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+        `;
+      fetchedHTML += "<tbody>";
+      data.forEach((patient) => {
+        fetchedHTML += `<tr data-place="${patient.place}">`;
+        fetchedHTML += `<td data-id="${patient.ID}">${patient.place}</td>`;
+        fetchedHTML += `<td>${patient.queue_id}</td>`;
+        fetchedHTML += `<td>${patient.patient_id}</td>`;
+        fetchedHTML += `<td>${patient.patient_name}</td>`;
+        fetchedHTML += `<td></td>`; // for actions (gets filled automatically by js function)
+        fetchedHTML += `</tr>`;
+      });
+      fetchedHTML += "</tbody>";
+      fetchedHTML += `</table>`;
+
+      tableElement.innerHTML = fetchedHTML;
+      setQueuePageFunctions(false);
+      break;
+  }
 }

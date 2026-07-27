@@ -37,10 +37,138 @@ function resetPopupDimmer() {
 }
 
 // ------ FUNCTION TO ADD QUEUE MANAGEMENT PAGE FEATURES ------
-function setQueuePageFunctions() {
+function setQueuePageFunctions(add_drag = true) {
   const tbodyElement = document.querySelector("tbody");
   const rowElements = tbodyElement.children;
   // console.log(rowElements);
+
+  for (const row of rowElements) {
+    let rowHTML = "";
+    if (row.dataset.place === "1") {
+      rowHTML = `
+      <div class="actions">
+        <button class="call button-default bg-blue" id="call_button">
+          <div class="call_icon icon">
+            <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13.137 3.945C12.493 3.571 12.095 2.875 12.096 2.125V2.122C12.097 0.95 11.158 0 10 0C8.842 0 7.903 0.95 7.903 2.122V2.125C7.904 2.876 7.507 3.571 6.862 3.945C2.195 6.657 4.877 15.66 0 17.251V19H20V17.251C15.123 15.66 17.805 6.657 13.137 3.945ZM10 1C10.552 1 11 1.449 11 2C11 2.552 10.552 3 10 3C9.448 3 9 2.552 9 2C9 1.449 9.448 1 10 1ZM13 21C13 22.598 11.608 24 10.029 24C8.45 24 7 22.598 7 21H13Z" fill="white"/>
+            </svg>
+          </div>
+        </button>
+        <div class="line"></div>
+        <button class="mark_completed button-default bg-green" id="mark_completed">
+          <div class="mark_com_icon icon">
+            <svg width="24" height="17" viewBox="0 0 24 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M23.2023 0.460614C23.4972 0.755927 23.6629 1.15624 23.6629 1.57361C23.6629 1.99099 23.4972 2.3913 23.2023 2.68661L9.55229 16.3366C9.25697 16.6316 8.85666 16.7972 8.43929 16.7972C8.02191 16.7972 7.6216 16.6316 7.32629 16.3366L0.501287 9.51161C0.346544 9.36742 0.22243 9.19354 0.136347 9.00034C0.0502636 8.80715 0.00397636 8.59859 0.000245117 8.38711C-0.00348613 8.17563 0.0354151 7.96557 0.114629 7.76946C0.193843 7.57334 0.311747 7.39519 0.461306 7.24563C0.610866 7.09607 0.789017 6.97817 0.985132 6.89896C1.18125 6.81974 1.39131 6.78084 1.60278 6.78457C1.81426 6.7883 2.02282 6.83459 2.21602 6.92067C2.40922 7.00676 2.5831 7.13087 2.72729 7.28561L8.43929 12.9976L20.9763 0.460614C21.2716 0.165668 21.6719 0 22.0893 0C22.5067 0 22.907 0.165668 23.2023 0.460614Z" fill="white"/>
+            </svg>
+          </div>
+        </button>
+        <button class="remove_patient button-default bg-red" class="remove_patient">
+          <div class="rem_icon icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13.8625 11.6065L20.7265 4.74255C21.0305 4.45455 21.2065 4.05455 21.2065 3.60655C21.2061 3.28977 21.1119 2.98022 20.9358 2.71689C20.7598 2.45355 20.5097 2.24821 20.2171 2.12674C19.9246 2.00527 19.6026 1.9731 19.2918 2.03428C18.981 2.09546 18.6952 2.24726 18.4705 2.47055L11.6065 9.35055L4.74255 2.47055C4.44126 2.16926 4.03263 2 3.60655 2C3.18046 2 2.77183 2.16926 2.47055 2.47055C2.16926 2.77183 2 3.18046 2 3.60655C2 4.03263 2.16926 4.44126 2.47055 4.74255L9.35055 11.6065L2.48655 18.4705C2.18255 18.7585 2.00655 19.1585 2.00655 19.6065C2.007 19.9233 2.1012 20.2329 2.27727 20.4962C2.45334 20.7595 2.7034 20.9649 2.99596 21.0864C3.28852 21.2078 3.61048 21.24 3.92129 21.1788C4.2321 21.1176 4.51785 20.9658 4.74255 20.7425L11.6065 13.8625L18.4705 20.7265C18.7585 21.0305 19.1585 21.2065 19.6065 21.2065C19.9233 21.2061 20.2329 21.1119 20.4962 20.9358C20.7595 20.7598 20.9649 20.5097 21.0864 20.2171C21.2078 19.9246 21.24 19.6026 21.1788 19.2918C21.1176 18.981 20.9658 18.6952 20.7425 18.4705L13.8625 11.6065Z" fill="white"/>
+            </svg>
+          </div>
+        </button>`;
+
+      if (add_drag) {
+        rowHTML += `<div class="drag_handle">
+          <svg
+            width="60"
+            height="60"
+            viewBox="0 0 60 60"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M55 41.875C55 40.84 54.16 40 53.125 40H6.875C5.84 40 5 40.84 5 41.875C5 42.91 5.84 43.75 6.875 43.75H53.125C54.16 43.75 55 42.91 55 41.875ZM55 29.375C55 28.34 54.16 27.5 53.125 27.5H6.875C5.84 27.5 5 28.34 5 29.375C5 30.41 5.84 31.25 6.875 31.25H53.125C54.16 31.25 55 30.41 55 29.375ZM55 16.875C55 15.84 54.16 15 53.125 15H6.875C5.84 15 5 15.84 5 16.875C5 17.91 5.84 18.75 6.875 18.75H53.125C54.16 18.75 55 17.91 55 16.875Z"
+              fill="black"
+            />
+          </svg>
+        </div>
+      </div>
+      `;
+      }
+
+      row.lastElementChild.innerHTML = rowHTML;
+      const callButtonElement = document.getElementById("call_button");
+      callButtonElement.addEventListener("click", () => {
+        const record_id =
+          callButtonElement.parentElement.parentElement.parentElement
+            .firstElementChild.dataset.id;
+
+        callButtonElement.disabled = true;
+        callButtonElement.classList.add("disabled");
+
+        flagDatabaseIsCalling(callButtonElement, record_id);
+      });
+
+      const markedCompletedElement = document.getElementById("mark_completed");
+      markedCompletedElement.addEventListener("click", () => {
+        markedCompletedFunction();
+      });
+    } else {
+      rowHTML = `
+      <div class="actions">
+        <button class="info button-default bg-blue">Info</button>
+        <div class="line"></div>
+        <button class="remove_patient button-default bg-red">
+          Remove Patient
+        </button>
+      `;
+
+      if (add_drag) {
+        rowHTML += `<div class="drag_handle">
+          <svg
+            width="60"
+            height="60"
+            viewBox="0 0 60 60"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M55 41.875C55 40.84 54.16 40 53.125 40H6.875C5.84 40 5 40.84 5 41.875C5 42.91 5.84 43.75 6.875 43.75H53.125C54.16 43.75 55 42.91 55 41.875ZM55 29.375C55 28.34 54.16 27.5 53.125 27.5H6.875C5.84 27.5 5 28.34 5 29.375C5 30.41 5.84 31.25 6.875 31.25H53.125C54.16 31.25 55 30.41 55 29.375ZM55 16.875C55 15.84 54.16 15 53.125 15H6.875C5.84 15 5 15.84 5 16.875C5 17.91 5.84 18.75 6.875 18.75H53.125C54.16 18.75 55 17.91 55 16.875Z"
+              fill="black"
+            />
+          </svg>
+        </div>
+      </div>
+      `;
+      }
+      row.lastElementChild.innerHTML = rowHTML;
+    }
+  }
+
+  const removePatientButtonElements =
+    document.querySelectorAll(".remove_patient");
+  removePatientButtonElements.forEach((removePatientButton) => {
+    removePatientButton.addEventListener("click", () => {
+      // absolutely HORRID looking selector but this is the most robust way to determine the button's record
+      const currentRecord =
+        removePatientButton.parentElement.parentElement.parentElement;
+
+      const patient_info = {
+        queue_id: currentRecord.childNodes[1].textContent,
+        record_id: currentRecord.childNodes[0].dataset.id,
+        patient_id: currentRecord.childNodes[2].textContent,
+      };
+
+      removePatientFunction(patient_info, "queue_m_page");
+    });
+  });
+
+  const infoButtonElements = document.querySelectorAll(".info");
+  infoButtonElements.forEach((infoButton) => {
+    infoButton.addEventListener("click", () => {
+      const currentRecord =
+        infoButton.parentElement.parentElement.parentElement;
+
+      const patient_id = currentRecord.childNodes[2].textContent;
+
+      viewRecord(patient_id, "patient_id", false);
+    });
+  });
+
+  if (!add_drag) return;
 
   // ------ CODE FOR TABLE/RECORD FUNCTIONS ------
   tbodyElement.addEventListener("dragover", (e) => {
@@ -118,10 +246,9 @@ function setQueuePageFunctions() {
   });
 
   updateDragHandles();
-
-  // ----- CODE FOR MARKED COMPLETED BUTTON -----
 }
 
+// ----- CODE FOR MARKED COMPLETED BUTTON -----
 function markedCompletedFunction() {
   const firstRowElement = document.querySelector("tbody tr:first-child");
 
@@ -157,7 +284,7 @@ function moveDatabaseMarkCompleted(record_id, queue_id, page) {
       if (data.success) {
         clearInterval(queue_interval);
         navDimmer.classList.remove("loading");
-        
+
         // We leave the DOM completely frozen here! No .remove()!
 
         const popup_data = {
@@ -268,121 +395,123 @@ function updatePlaces(rowElements) {
   let current_place = 1;
   for (const row of rowElements) {
     row.firstElementChild.textContent = current_place;
+    row.dataset.place = current_place;
     current_place++;
 
-    if (row === rowElements[0]) {
-      row.lastElementChild.innerHTML = `
-      <div class="actions">
-        <button class="call button-default bg-blue" id="call_button">
-          <div class="call_icon icon">
-            <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M13.137 3.945C12.493 3.571 12.095 2.875 12.096 2.125V2.122C12.097 0.95 11.158 0 10 0C8.842 0 7.903 0.95 7.903 2.122V2.125C7.904 2.876 7.507 3.571 6.862 3.945C2.195 6.657 4.877 15.66 0 17.251V19H20V17.251C15.123 15.66 17.805 6.657 13.137 3.945ZM10 1C10.552 1 11 1.449 11 2C11 2.552 10.552 3 10 3C9.448 3 9 2.552 9 2C9 1.449 9.448 1 10 1ZM13 21C13 22.598 11.608 24 10.029 24C8.45 24 7 22.598 7 21H13Z" fill="white"/>
-            </svg>
-          </div>
-        </button>
-        <div class="line"></div>
-        <button class="mark_completed button-default bg-green" id="mark_completed">
-          <div class="mark_com_icon icon">
-            <svg width="24" height="17" viewBox="0 0 24 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M23.2023 0.460614C23.4972 0.755927 23.6629 1.15624 23.6629 1.57361C23.6629 1.99099 23.4972 2.3913 23.2023 2.68661L9.55229 16.3366C9.25697 16.6316 8.85666 16.7972 8.43929 16.7972C8.02191 16.7972 7.6216 16.6316 7.32629 16.3366L0.501287 9.51161C0.346544 9.36742 0.22243 9.19354 0.136347 9.00034C0.0502636 8.80715 0.00397636 8.59859 0.000245117 8.38711C-0.00348613 8.17563 0.0354151 7.96557 0.114629 7.76946C0.193843 7.57334 0.311747 7.39519 0.461306 7.24563C0.610866 7.09607 0.789017 6.97817 0.985132 6.89896C1.18125 6.81974 1.39131 6.78084 1.60278 6.78457C1.81426 6.7883 2.02282 6.83459 2.21602 6.92067C2.40922 7.00676 2.5831 7.13087 2.72729 7.28561L8.43929 12.9976L20.9763 0.460614C21.2716 0.165668 21.6719 0 22.0893 0C22.5067 0 22.907 0.165668 23.2023 0.460614Z" fill="white"/>
-            </svg>
-          </div>
-        </button>
-        <button class="remove_patient button-default bg-red" class="remove_patient">
-          <div class="rem_icon icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M13.8625 11.6065L20.7265 4.74255C21.0305 4.45455 21.2065 4.05455 21.2065 3.60655C21.2061 3.28977 21.1119 2.98022 20.9358 2.71689C20.7598 2.45355 20.5097 2.24821 20.2171 2.12674C19.9246 2.00527 19.6026 1.9731 19.2918 2.03428C18.981 2.09546 18.6952 2.24726 18.4705 2.47055L11.6065 9.35055L4.74255 2.47055C4.44126 2.16926 4.03263 2 3.60655 2C3.18046 2 2.77183 2.16926 2.47055 2.47055C2.16926 2.77183 2 3.18046 2 3.60655C2 4.03263 2.16926 4.44126 2.47055 4.74255L9.35055 11.6065L2.48655 18.4705C2.18255 18.7585 2.00655 19.1585 2.00655 19.6065C2.007 19.9233 2.1012 20.2329 2.27727 20.4962C2.45334 20.7595 2.7034 20.9649 2.99596 21.0864C3.28852 21.2078 3.61048 21.24 3.92129 21.1788C4.2321 21.1176 4.51785 20.9658 4.74255 20.7425L11.6065 13.8625L18.4705 20.7265C18.7585 21.0305 19.1585 21.2065 19.6065 21.2065C19.9233 21.2061 20.2329 21.1119 20.4962 20.9358C20.7595 20.7598 20.9649 20.5097 21.0864 20.2171C21.2078 19.9246 21.24 19.6026 21.1788 19.2918C21.1176 18.981 20.9658 18.6952 20.7425 18.4705L13.8625 11.6065Z" fill="white"/>
-            </svg>
-          </div>
-        </button>
-        <div class="drag_handle">
-          <svg
-            width="60"
-            height="60"
-            viewBox="0 0 60 60"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M55 41.875C55 40.84 54.16 40 53.125 40H6.875C5.84 40 5 40.84 5 41.875C5 42.91 5.84 43.75 6.875 43.75H53.125C54.16 43.75 55 42.91 55 41.875ZM55 29.375C55 28.34 54.16 27.5 53.125 27.5H6.875C5.84 27.5 5 28.34 5 29.375C5 30.41 5.84 31.25 6.875 31.25H53.125C54.16 31.25 55 30.41 55 29.375ZM55 16.875C55 15.84 54.16 15 53.125 15H6.875C5.84 15 5 15.84 5 16.875C5 17.91 5.84 18.75 6.875 18.75H53.125C54.16 18.75 55 17.91 55 16.875Z"
-              fill="black"
-            />
-          </svg>
-        </div>
-      </div>
-      `;
-      const callButtonElement = document.getElementById("call_button");
-      callButtonElement.addEventListener("click", () => {
-        const record_id =
-          callButtonElement.parentElement.parentElement.parentElement
-            .firstElementChild.dataset.id;
 
-        callButtonElement.disabled = true;
-        callButtonElement.classList.add("disabled");
+    // if (row.dataset.place === "1") {
+    //   row.lastElementChild.innerHTML = `
+    //   <div class="actions">
+    //     <button class="call button-default bg-blue" id="call_button">
+    //       <div class="call_icon icon">
+    //         <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    //         <path d="M13.137 3.945C12.493 3.571 12.095 2.875 12.096 2.125V2.122C12.097 0.95 11.158 0 10 0C8.842 0 7.903 0.95 7.903 2.122V2.125C7.904 2.876 7.507 3.571 6.862 3.945C2.195 6.657 4.877 15.66 0 17.251V19H20V17.251C15.123 15.66 17.805 6.657 13.137 3.945ZM10 1C10.552 1 11 1.449 11 2C11 2.552 10.552 3 10 3C9.448 3 9 2.552 9 2C9 1.449 9.448 1 10 1ZM13 21C13 22.598 11.608 24 10.029 24C8.45 24 7 22.598 7 21H13Z" fill="white"/>
+    //         </svg>
+    //       </div>
+    //     </button>
+    //     <div class="line"></div>
+    //     <button class="mark_completed button-default bg-green" id="mark_completed">
+    //       <div class="mark_com_icon icon">
+    //         <svg width="24" height="17" viewBox="0 0 24 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+    //         <path fill-rule="evenodd" clip-rule="evenodd" d="M23.2023 0.460614C23.4972 0.755927 23.6629 1.15624 23.6629 1.57361C23.6629 1.99099 23.4972 2.3913 23.2023 2.68661L9.55229 16.3366C9.25697 16.6316 8.85666 16.7972 8.43929 16.7972C8.02191 16.7972 7.6216 16.6316 7.32629 16.3366L0.501287 9.51161C0.346544 9.36742 0.22243 9.19354 0.136347 9.00034C0.0502636 8.80715 0.00397636 8.59859 0.000245117 8.38711C-0.00348613 8.17563 0.0354151 7.96557 0.114629 7.76946C0.193843 7.57334 0.311747 7.39519 0.461306 7.24563C0.610866 7.09607 0.789017 6.97817 0.985132 6.89896C1.18125 6.81974 1.39131 6.78084 1.60278 6.78457C1.81426 6.7883 2.02282 6.83459 2.21602 6.92067C2.40922 7.00676 2.5831 7.13087 2.72729 7.28561L8.43929 12.9976L20.9763 0.460614C21.2716 0.165668 21.6719 0 22.0893 0C22.5067 0 22.907 0.165668 23.2023 0.460614Z" fill="white"/>
+    //         </svg>
+    //       </div>
+    //     </button>
+    //     <button class="remove_patient button-default bg-red" class="remove_patient">
+    //       <div class="rem_icon icon">
+    //         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    //         <path d="M13.8625 11.6065L20.7265 4.74255C21.0305 4.45455 21.2065 4.05455 21.2065 3.60655C21.2061 3.28977 21.1119 2.98022 20.9358 2.71689C20.7598 2.45355 20.5097 2.24821 20.2171 2.12674C19.9246 2.00527 19.6026 1.9731 19.2918 2.03428C18.981 2.09546 18.6952 2.24726 18.4705 2.47055L11.6065 9.35055L4.74255 2.47055C4.44126 2.16926 4.03263 2 3.60655 2C3.18046 2 2.77183 2.16926 2.47055 2.47055C2.16926 2.77183 2 3.18046 2 3.60655C2 4.03263 2.16926 4.44126 2.47055 4.74255L9.35055 11.6065L2.48655 18.4705C2.18255 18.7585 2.00655 19.1585 2.00655 19.6065C2.007 19.9233 2.1012 20.2329 2.27727 20.4962C2.45334 20.7595 2.7034 20.9649 2.99596 21.0864C3.28852 21.2078 3.61048 21.24 3.92129 21.1788C4.2321 21.1176 4.51785 20.9658 4.74255 20.7425L11.6065 13.8625L18.4705 20.7265C18.7585 21.0305 19.1585 21.2065 19.6065 21.2065C19.9233 21.2061 20.2329 21.1119 20.4962 20.9358C20.7595 20.7598 20.9649 20.5097 21.0864 20.2171C21.2078 19.9246 21.24 19.6026 21.1788 19.2918C21.1176 18.981 20.9658 18.6952 20.7425 18.4705L13.8625 11.6065Z" fill="white"/>
+    //         </svg>
+    //       </div>
+    //     </button>
+    //     <div class="drag_handle">
+    //       <svg
+    //         width="60"
+    //         height="60"
+    //         viewBox="0 0 60 60"
+    //         fill="none"
+    //         xmlns="http://www.w3.org/2000/svg"
+    //       >
+    //         <path
+    //           d="M55 41.875C55 40.84 54.16 40 53.125 40H6.875C5.84 40 5 40.84 5 41.875C5 42.91 5.84 43.75 6.875 43.75H53.125C54.16 43.75 55 42.91 55 41.875ZM55 29.375C55 28.34 54.16 27.5 53.125 27.5H6.875C5.84 27.5 5 28.34 5 29.375C5 30.41 5.84 31.25 6.875 31.25H53.125C54.16 31.25 55 30.41 55 29.375ZM55 16.875C55 15.84 54.16 15 53.125 15H6.875C5.84 15 5 15.84 5 16.875C5 17.91 5.84 18.75 6.875 18.75H53.125C54.16 18.75 55 17.91 55 16.875Z"
+    //           fill="black"
+    //         />
+    //       </svg>
+    //     </div>
+    //   </div>
+    //   `;
+    //   const callButtonElement = document.getElementById("call_button");
+    //   callButtonElement.addEventListener("click", () => {
+    //     const record_id =
+    //       callButtonElement.parentElement.parentElement.parentElement
+    //         .firstElementChild.dataset.id;
 
-        flagDatabaseIsCalling(callButtonElement, record_id);
-      });
+    //     callButtonElement.disabled = true;
+    //     callButtonElement.classList.add("disabled");
 
-      const markedCompletedElement = document.getElementById("mark_completed");
-      markedCompletedElement.addEventListener("click", () => {
-        markedCompletedFunction();
-      });
-    } else {
-      row.lastElementChild.innerHTML = `
-      <div class="actions">
-        <button class="info button-default bg-blue">Info</button>
-        <div class="line"></div>
-        <button class="remove_patient button-default bg-red">
-          Remove Patient
-        </button>
-        <div class="drag_handle">
-          <svg
-            width="60"
-            height="60"
-            viewBox="0 0 60 60"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M55 41.875C55 40.84 54.16 40 53.125 40H6.875C5.84 40 5 40.84 5 41.875C5 42.91 5.84 43.75 6.875 43.75H53.125C54.16 43.75 55 42.91 55 41.875ZM55 29.375C55 28.34 54.16 27.5 53.125 27.5H6.875C5.84 27.5 5 28.34 5 29.375C5 30.41 5.84 31.25 6.875 31.25H53.125C54.16 31.25 55 30.41 55 29.375ZM55 16.875C55 15.84 54.16 15 53.125 15H6.875C5.84 15 5 15.84 5 16.875C5 17.91 5.84 18.75 6.875 18.75H53.125C54.16 18.75 55 17.91 55 16.875Z"
-              fill="black"
-            />
-          </svg>
-        </div>
-      </div>
-      `;
-    }
+    //     flagDatabaseIsCalling(callButtonElement, record_id);
+    //   });
+
+    //   const markedCompletedElement = document.getElementById("mark_completed");
+    //   markedCompletedElement.addEventListener("click", () => {
+    //     markedCompletedFunction();
+    //   });
+    // } else {
+    //   row.lastElementChild.innerHTML = `
+    //   <div class="actions">
+    //     <button class="info button-default bg-blue">Info</button>
+    //     <div class="line"></div>
+    //     <button class="remove_patient button-default bg-red">
+    //       Remove Patient
+    //     </button>
+    //     <div class="drag_handle">
+    //       <svg
+    //         width="60"
+    //         height="60"
+    //         viewBox="0 0 60 60"
+    //         fill="none"
+    //         xmlns="http://www.w3.org/2000/svg"
+    //       >
+    //         <path
+    //           d="M55 41.875C55 40.84 54.16 40 53.125 40H6.875C5.84 40 5 40.84 5 41.875C5 42.91 5.84 43.75 6.875 43.75H53.125C54.16 43.75 55 42.91 55 41.875ZM55 29.375C55 28.34 54.16 27.5 53.125 27.5H6.875C5.84 27.5 5 28.34 5 29.375C5 30.41 5.84 31.25 6.875 31.25H53.125C54.16 31.25 55 30.41 55 29.375ZM55 16.875C55 15.84 54.16 15 53.125 15H6.875C5.84 15 5 15.84 5 16.875C5 17.91 5.84 18.75 6.875 18.75H53.125C54.16 18.75 55 17.91 55 16.875Z"
+    //           fill="black"
+    //         />
+    //       </svg>
+    //     </div>
+    //   </div>
+    //   `;
+    // }
   }
 
-  const removePatientButtonElements =
-    document.querySelectorAll(".remove_patient");
-  removePatientButtonElements.forEach((removePatientButton) => {
-    removePatientButton.addEventListener("click", () => {
-      // absolutely HORRID looking selector but this is the most robust way to determine the button's record
-      const currentRecord =
-        removePatientButton.parentElement.parentElement.parentElement;
+  // const removePatientButtonElements =
+  //   document.querySelectorAll(".remove_patient");
+  // removePatientButtonElements.forEach((removePatientButton) => {
+  //   removePatientButton.addEventListener("click", () => {
+  //     // absolutely HORRID looking selector but this is the most robust way to determine the button's record
+  //     const currentRecord =
+  //       removePatientButton.parentElement.parentElement.parentElement;
 
-      const patient_info = {
-        queue_id: currentRecord.childNodes[1].textContent,
-        record_id: currentRecord.childNodes[0].dataset.id,
-        patient_id: currentRecord.childNodes[2].textContent,
-      };
+  //     const patient_info = {
+  //       queue_id: currentRecord.childNodes[1].textContent,
+  //       record_id: currentRecord.childNodes[0].dataset.id,
+  //       patient_id: currentRecord.childNodes[2].textContent,
+  //     };
 
-      removePatientFunction(patient_info, "queue_m_page");
-    });
-  });
+  //     removePatientFunction(patient_info, "queue_m_page");
+  //   });
+  // });
 
-  const infoButtonElements = document.querySelectorAll(".info");
-  infoButtonElements.forEach((infoButton) => {
-    infoButton.addEventListener("click", () => {
-      const currentRecord =
-        infoButton.parentElement.parentElement.parentElement;
+  // const infoButtonElements = document.querySelectorAll(".info");
+  // infoButtonElements.forEach((infoButton) => {
+  //   infoButton.addEventListener("click", () => {
+  //     const currentRecord =
+  //       infoButton.parentElement.parentElement.parentElement;
 
-      const patient_id = currentRecord.childNodes[2].textContent;
+  //     const patient_id = currentRecord.childNodes[2].textContent;
 
-      viewRecord(patient_id, "patient_id", false);
-    });
-  });
+  //     viewRecord(patient_id, "patient_id", false);
+  //   });
+  // });
 }
 
 function updateDatabasePlaces(page, deleted_record_id = null) {
@@ -408,7 +537,9 @@ function updateDatabasePlaces(page, deleted_record_id = null) {
     let current_place = 1;
 
     // 1. Grab the currently serving patient
-    const currentPatient = document.querySelector(".patient_summary .record_id");
+    const currentPatient = document.querySelector(
+      ".patient_summary .record_id",
+    );
     if (currentPatient && currentPatient.value != deleted_record_id) {
       new_order.push({
         record_id: currentPatient.value,
@@ -417,7 +548,9 @@ function updateDatabasePlaces(page, deleted_record_id = null) {
     }
 
     // 2. Grab all upcoming patients
-    const upcomingPatients = document.querySelectorAll(".upcoming_patients .record_id");
+    const upcomingPatients = document.querySelectorAll(
+      ".upcoming_patients .record_id",
+    );
     upcomingPatients.forEach((patient) => {
       if (patient.value != deleted_record_id) {
         new_order.push({

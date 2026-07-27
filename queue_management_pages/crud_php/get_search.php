@@ -1,5 +1,5 @@
 <?php
-include "../../global/patient_database_connection.php";
+include "../../global/connection.php";
 session_start();
 
 header("Content-Type: application/json");
@@ -24,15 +24,15 @@ $page = $_GET["page"];
 
 // !!! by default it's for the queue_m_page !!!
 $table = "tbl_queues";
-$sql_query = "(queue_id LIKE ? OR patient_id LIKE ? OR patient_name LIKE ?)";
+$sql_query = "department=? AND (queue_id LIKE ? OR patient_id LIKE ? OR patient_name LIKE ?)";
 
 // searches for matches on both sides of string
 $wildcard_string = "%" . $query . "%";
 
-// three params for three identical wildcard strings
-$params = "sss";
+// one param for dept, three params for three identical wildcard strings
+$params = "ssss";
 
-$values = [$wildcard_string, $wildcard_string, $wildcard_string];
+$values = [$department, $wildcard_string, $wildcard_string, $wildcard_string];
 
 // !!! ----------------------------------- !!!
 
@@ -51,7 +51,7 @@ switch ($page) {
       // add two more params for the date
       $params .= "ss";
       // and two more values
-      array_push($values, $completed_values);
+      array_merge($values, $completed_values);
     } else {
       // if the query is blank, just return ones that match the date
       $sql_query = $completed_query;
@@ -110,4 +110,4 @@ if ($result) {
 $stmt->close();
 $conn->close();
 
-echo json_encode(["success" => true, "results" => $search_data]);
+echo json_encode($search_data);

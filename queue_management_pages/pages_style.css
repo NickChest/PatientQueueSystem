@@ -452,7 +452,6 @@ main {
       outline: none;
     }
 
-
     .account_info {
       display: flex;
       align-items: center;
@@ -563,7 +562,7 @@ main {
             user-select: none;
           }
 
-          tr:nth-child(n + 2) {
+          tr:not([data-place="1"]) {
             .actions {
               button:last-of-type {
                 grid-column: span 2;
@@ -657,7 +656,7 @@ main {
         }
 
         tbody {
-          tr:first-child {
+          tr[data-place="1"] {
             background: var(--tbl-green-accent);
             font-weight: bold;
           }
@@ -715,6 +714,19 @@ main {
         button {
           font-size: 20px;
         }
+      }
+    }
+
+    /* when search returns no matching rows */
+    .table.no_results {
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .no_result_message {
+        text-align: center;
+        font-size: 30px;
+        width: 100%;
       }
     }
 

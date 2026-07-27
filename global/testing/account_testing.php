@@ -1,10 +1,10 @@
 <?php
-include "connection.php";
+include "../connection.php";
 
-$username = "user1";
-$plain_password = "amongus123";
-$department = "Hemodialysis";
-$staff_name = "Stellman, Jay";
+$username = "chemoadmin";
+$plain_password = "1";
+$department = "Chemotherapy";
+$staff_name = "Chemo Admin";
 $privileges = "admin";
 
 $password_hash = password_hash($plain_password, PASSWORD_DEFAULT);
