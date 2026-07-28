@@ -49,7 +49,7 @@ $queue_data = [];
 
 if ($result) {
   while ($row = $result->fetch_assoc()) {
-    if (!empty($row["only_date"])) {
+    if ($_SESSION["privileges"] === "admin") {
       $date = new DateTime($row["only_date"]);
       $row["only_date"] = $date->format('F j, Y');
     }

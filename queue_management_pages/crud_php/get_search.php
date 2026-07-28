@@ -26,8 +26,17 @@ $offset = isset($_GET["offset"]) ? (int)$_GET["offset"] : 0;
 // !!! by default it's for the tbl_completed !!!
 
 $table = "tbl_completed";
-$select_columns = "queue_id, patient_id, patient_name, marked_by, DATE(marked_time_and_date) AS only_date, TIME_FORMAT(marked_time_and_date, '%h:%i %p') AS Time12";
 
+$date_clause = "AND marked_time_and_date >= CURDATE() AND marked_time_and_date < CURDATE() + INTERVAL 1 DAY";
+$user_clause = "";
+
+if ($_SESSION["privileges"] === "admin") {
+  $date_clause = "";
+  $user_clause = "marked_by, DATE(marked_time_and_date) AS only_date,";
+} 
+
+// !!! ----------------------------------- !!!
+//            TBL_COMPLETED STUFF
 // !!! ----------------------------------- !!!
 
 if (isset($_GET["query"])) {
@@ -55,16 +64,24 @@ if (isset($_GET["query"])) {
 } else {
   // if query is blank
   // make only date be basis
-  $sql_query = "(marked_time_and_date >= ? AND 
-                marked_time_and_date < ? + INTERVAL 1 DAY)";
-  $params = "ss";
-  $values = [$_GET["date"], $_GET["date"]];
+  if ($_SESSION["privileges"] === "admin") {
+    $sql_query = "(marked_time_and_date >= ? AND 
+                  marked_time_and_date < ? + INTERVAL 1 DAY)";
+    $params = "ss";
+    $values = [$_GET["date"], $_GET["date"]];
+  }
 }
 
+// !!! ----------------------------------- !!!
+//             TBL_REMOVED STUFF
+// !!! ----------------------------------- !!!
+
+//add offset to end
 array_push($values, $offset);
 
 
-$sql = "SELECT $select_columns FROM $table WHERE department = ? AND $sql_query ORDER BY marked_time_and_date DESC LIMIT 50 OFFSET ? ";
+$sql = "SELECT queue_id, patient_id, patient_name, $user_clause TIME_FORMAT(marked_time_and_date, '%h:%i %p') AS Time12 FROM $table WHERE department = ? AND $sql_query $date_clause ORDER BY marked_time_and_date DESC LIMIT 50 OFFSET ? ";
+// echo json_encode($sql);
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s" . $params . "i", $department, ...$values);
 $stmt->execute();
@@ -73,8 +90,10 @@ $result = $stmt->get_result();
 $search_data = [];
 if ($result) {
   while ($row = $result->fetch_assoc()) {
-    $date = new DateTime($row["only_date"]);
-    $row["only_date"] = $date->format('F j, Y');
+    if (isset($row["only_date"])) {
+      $date = new DateTime($row["only_date"]);
+      $row["only_date"] = $date->format('F j, Y');
+    }
     $search_data[] = $row;
   }
 }

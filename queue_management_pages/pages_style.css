@@ -723,6 +723,9 @@ main {
           font-size: 20px;
         }
       }
+      td:last-child {
+        width: 8%;
+      }
     }
 
     .table {

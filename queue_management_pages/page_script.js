@@ -397,7 +397,8 @@ function loadPage(page) {
                   <th>Queue ID</th>
                   <th>Patient ID</th>
                   <th>Patient Name</th>
-                  <th>Reason</th>`;
+                  <th>Reason</th>
+                  <th>Time Removed</th>`;
           if (data[0].removed_by) {
             // if admin, see who removed the record
             fetchedHTML += "<th>Removed by</th>";
@@ -408,36 +409,7 @@ function loadPage(page) {
               </thead>
             `;
           fetchedHTML += `<tbody>`;
-          data.forEach((removed_patient) => {
-            fetchedHTML += `<tr>`;
-            fetchedHTML += `<td>${removed_patient.queue_id}</td>`;
-            fetchedHTML += `<td>${removed_patient.patient_id}</td>`;
-            fetchedHTML += `<td>${removed_patient.patient_name}</td>`;
-            fetchedHTML += `<td>${removed_patient.reason}</td>`;
-            if (data[0].removed_by) {
-              // if admin, see who removed the record
-              fetchedHTML += `<td>${removed_patient.removed_by}</td>`;
-            }
-
-            if (
-              removed_patient.is_today &&
-              removed_patient.reason !== "Auto-flushed: Day has passed"
-            ) {
-              fetchedHTML += `
-                <td><button class="button-default bg-blue restore_button" 
-                data-id="${removed_patient.ID}" 
-                data-queue-id="${removed_patient.queue_id}"
-                data-patient-id="${removed_patient.patient_id}"
-                >Restore</button></td>`;
-            } else {
-              fetchedHTML += `
-                <td> 
-                ---
-                </td>
-              `;
-            }
-            fetchedHTML += `</tr>`;
-          });
+          fetchedHTML += generateCompletedRemovedTables(page, data);
           fetchedHTML += `</tbody>`;
           fetchedHTML += `</table>`;
           fetchedHTML += `</div>`;
@@ -445,6 +417,7 @@ function loadPage(page) {
           articleElement.innerHTML = fetchedHTML;
           setSearchFunction(page);
           addRestoreFunction();
+          setLoadMoreAtScroll();
         });
 
       break;
@@ -480,12 +453,6 @@ function loadPage(page) {
                 <div class="empty">There are currently no patients in the queue</div>
                 <!-- <button class="add_patient button-default bg-green" id="add_patient">Add Patient</button> -->
               `;
-
-            document
-              .getElementById("add_patient")
-              .addEventListener("click", () => {
-                addPatientFunction();
-              });
             return;
           }
 
@@ -1083,9 +1050,14 @@ function viewRecord(id, id_type, is_add_patient) {
 // ------ COUNTER SCRIPTS ------
 
 if (counterStaffSelectElement) {
-  getDepartmentQueue(counterStaffSelectElement.value);
+  getDepartmentQueue(counterStaffSelectElement.value, false);
 
   counterStaffSelectElement.addEventListener("change", () => {
+    // reset global variables for scrolling
+    is_fetching = false;
+    current_offset = 0;
+    has_more_records = true;
+    record_total = 0;
     const new_url_params = new URLSearchParams(window.location.search);
 
     if (new_url_params.has("page")) {
@@ -1093,7 +1065,6 @@ if (counterStaffSelectElement) {
     }
 
     getDepartmentQueue(counterStaffSelectElement.value);
-    loadPage(current_page);
   });
 }
 
@@ -1140,6 +1111,7 @@ function setSearchFunction(page) {
         value: searchFilterElement.value,
       };
       const query_value = document.querySelector("#search_form input").value;
+      document.querySelector("div.table").scrollTo(0, 0);
 
       searchDatabaseRecords(query_value, page, filter_data);
     });
@@ -1209,7 +1181,7 @@ function setSearchFunction(page) {
 
 function searchDatabaseRecords(query, page, filter_data) {
   // reset for global variables for scrolling
-  let is_fetching = false;
+  is_fetching = false;
   current_offset = 0;
   has_more_records = true;
   record_total = 0;
@@ -1387,7 +1359,47 @@ function loadMoreRecords() {
         return response.json();
       })
       .then((data) => {
-        console.log(data.length);
+        // console.log(data.length);
+        if (data.length < 50) {
+          has_more_records = false;
+        }
+
+        const tableBodyElement = document.querySelector(".table tbody");
+        tableBodyElement.insertAdjacentHTML(
+          "beforeend",
+          generateCompletedRemovedTables(current_page, data),
+        );
+
+        is_fetching = false;
+      });
+  } else if (current_page === "removed_pm_page") {
+    // determine if it is a search (get queries exist)
+    const current_url = window.location.search;
+    const current_params = new URLSearchParams(current_url);
+    if (current_params.size !== 0) {
+      // slice removes ? at beginning
+      // add offset to end
+      const updated_query_string = `${window.location.search.slice(1)}&offset=${current_offset}`;
+      getSearch(updated_query_string);
+      return;
+    }
+
+    // normal scrolling
+    fetch("queue_management_pages/removed_management_page.php", {
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      body: JSON.stringify({
+        offset: current_offset,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok/File not found");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // console.log(data.length);
         if (data.length < 50) {
           has_more_records = false;
         }
@@ -1418,7 +1430,7 @@ function getSearch(params_query_string) {
         return;
       }
 
-      console.log(data.length);
+      // console.log(data.length);
       if (data.length < 50) {
         has_more_records = false;
       }
@@ -1502,9 +1514,11 @@ function noResultsFormatTable(
 
 function generateCompletedRemovedTables(page, data) {
   let fetchedHTML = "";
+  let colspan = 5;
   if (page === "completed_pm_page") {
     data.forEach((completed_patient) => {
       record_total++;
+
       fetchedHTML += `<tr>`;
       fetchedHTML += `<td>${completed_patient.queue_id}</td>`;
       fetchedHTML += `<td>${completed_patient.patient_id}</td>`;
@@ -1524,14 +1538,55 @@ function generateCompletedRemovedTables(page, data) {
       }
     });
     fetchedHTML += "</tr>";
+  } else if (page === "removed_pm_page") {
+    colspan = 7;
+    
+    data.forEach((removed_patient) => {
+      record_total++;
+      fetchedHTML += `<tr>`;
+      fetchedHTML += `<td>${removed_patient.queue_id}</td>`;
+      fetchedHTML += `<td>${removed_patient.patient_id}</td>`;
+      fetchedHTML += `<td>${removed_patient.patient_name}</td>`;
+      fetchedHTML += `<td>${removed_patient.reason}</td>`;
+
+      // add date for admin
+      let date_completed = removed_patient.only_date
+        ? ":: " + removed_patient.only_date
+        : "";
+
+      fetchedHTML += `<td>${removed_patient.Time12} ${date_completed}</td>`;
+      if (data[0].removed_by) {
+        // if admin, see who removed the record
+        fetchedHTML += `<td>${removed_patient.removed_by}</td>`;
+      }
+
+      if (
+        removed_patient.is_today &&
+        removed_patient.reason !== "Auto-flushed: Day has passed"
+      ) {
+        fetchedHTML += `
+          <td><button class="button-default bg-blue restore_button" 
+          data-id="${removed_patient.ID}" 
+          data-queue-id="${removed_patient.queue_id}"
+          data-patient-id="${removed_patient.patient_id}"
+          >Restore</button></td>`;
+      } else {
+        fetchedHTML += `
+            <td> 
+            ---
+            </td>
+          `;
+      }
+      fetchedHTML += `</tr>`;
+    });
   }
 
   if (!has_more_records) {
     let message = `All completed patient records shown (${record_total})`;
     if (window.location.search !== "") {
-      message = `All matching records shown. (${record_total})`;
+      message = `All matching records shown (${record_total})`;
     }
-    fetchedHTML += `<tr><td colspan="5" style="text-align: center; background: var(--white-pure); border: none;">${message}</td></tr>`;
+    fetchedHTML += `<tr><td colspan="${colspan}" style="text-align: center; background: var(--white-pure); border: none;">${message}</td></tr>`;
   }
 
   return fetchedHTML;
