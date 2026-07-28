@@ -29,18 +29,20 @@ $table = "tbl_completed";
 
 $date_clause = "AND marked_time_and_date >= CURDATE() AND marked_time_and_date < CURDATE() + INTERVAL 1 DAY";
 $user_clause = "";
+$order_clause = "marked_time_and_date";
 
 if ($_SESSION["privileges"] === "admin") {
   $date_clause = "";
-  $user_clause = "marked_by, DATE(marked_time_and_date) AS only_date,";
-} 
+  $user_clause = "marked_by, DATE(marked_time_and_date) AS only_date, TIME_FORMAT(marked_time_and_date, '%h:%i %p') AS Time12";
+}
 
-// !!! ----------------------------------- !!!
-//            TBL_COMPLETED STUFF
-// !!! ----------------------------------- !!!
+$sql_query = "";
+$params = "";
+$values = [];
+// if query isn't blank
+$query = isset($_GET["query"]) ? $_GET["query"] : null;
 
-if (isset($_GET["query"])) {
-  // if query isn't blank
+if ($query) {
   // make it the values for wildcard search
   $query = $_GET["query"];
 
@@ -51,6 +53,14 @@ if (isset($_GET["query"])) {
   $sql_query = "(queue_id LIKE ? OR patient_id LIKE ? OR patient_name LIKE ?)";
   $params = "sss";
   $values = [$wildcard_string, $wildcard_string, $wildcard_string];
+}
+
+
+if ($page === 'completed_pm_page') {
+
+  // !!! ----------------------------------- !!!
+  //            TBL_COMPLETED STUFF
+  // !!! ----------------------------------- !!!
 
   // if there is date
   // include it in the sql
@@ -61,27 +71,72 @@ if (isset($_GET["query"])) {
     $dates = [$_GET["date"], $_GET["date"]];
     $values = array_merge($values, $dates);
   }
-} else {
-  // if query is blank
-  // make only date be basis
-  if ($_SESSION["privileges"] === "admin") {
-    $sql_query = "(marked_time_and_date >= ? AND 
+
+  if (!$query) {
+    // if query is blank
+    // make only date be basis
+    if ($_SESSION["privileges"] === "admin" && isset($_GET["date"])) {
+      $sql_query = "(marked_time_and_date >= ? AND 
                   marked_time_and_date < ? + INTERVAL 1 DAY)";
-    $params = "ss";
-    $values = [$_GET["date"], $_GET["date"]];
+      $params = "ss";
+      $values = [$_GET["date"], $_GET["date"]];
+    }
+  }
+} elseif ($page === 'removed_pm_page') {
+
+  // !!! ----------------------------------- !!!
+  //             TBL_REMOVED STUFF
+  // !!! ----------------------------------- !!!
+
+  $date_clause = "AND removed_time_and_date >= CURDATE() AND removed_time_and_date < CURDATE() + INTERVAL 1 DAY AND reason != 'Auto-flushed: Day has passed'";
+  $user_clause = ", reason, TIME_FORMAT(removed_time_and_date, '%h:%i %p') AS Time12";
+  $order_clause = "removed_time_and_date";
+
+
+  if ($_SESSION["privileges"] === "admin") {
+    $date_clause = "";
+    $user_clause = ", reason, removed_by, removed_time_and_date, DATE(removed_time_and_date) AS only_date, TIME_FORMAT(removed_time_and_date, '%h:%i %p') AS Time12";
+  }
+
+  $table = "tbl_removed";
+  $reason = $_GET["reason"];
+
+  $removed_query = "";
+
+  // check if the reason is all
+  // this can be an equal one and not LIKE because it's a dropdown
+
+  if ($query) {
+    if ($reason !== "all") {
+      // add reason if not all
+      $removed_query .= " AND reason = ?";
+
+      // if the query is not blank, include it in the final sql
+      $sql_query .= $removed_query;
+
+      // add one param for the reason
+      $params .= "s";
+      // and value
+      array_push($values, $reason);
+    }
+  } else {
+    // if it is blank
+    // just return ones that match the reason
+    $sql_query = "reason = ?";
+
+    // only one param needed now
+    $params = "s";
+    // and only one value
+    $values = [$reason];
   }
 }
-
-// !!! ----------------------------------- !!!
-//             TBL_REMOVED STUFF
-// !!! ----------------------------------- !!!
 
 //add offset to end
 array_push($values, $offset);
 
 
-$sql = "SELECT queue_id, patient_id, patient_name, $user_clause TIME_FORMAT(marked_time_and_date, '%h:%i %p') AS Time12 FROM $table WHERE department = ? AND $sql_query $date_clause ORDER BY marked_time_and_date DESC LIMIT 50 OFFSET ? ";
-// echo json_encode($sql);
+$sql = "SELECT queue_id, patient_id, patient_name $user_clause FROM $table WHERE department = ? AND $sql_query $date_clause ORDER BY $order_clause DESC LIMIT 50 OFFSET ? ";
+// echo json_encode(["sql" => $sql, "query" => $query, "sql_query" => $sql_query, "params" => $params, "values" => $values], JSON_PRETTY_PRINT);
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s" . $params . "i", $department, ...$values);
 $stmt->execute();
@@ -94,6 +149,21 @@ if ($result) {
       $date = new DateTime($row["only_date"]);
       $row["only_date"] = $date->format('F j, Y');
     }
+
+    if ($page === "removed_pm_page") {
+      if ($_SESSION["privileges"] === "admin") {
+        $db_date = new DateTimeImmutable($row["removed_time_and_date"]);
+        $today = new DateTimeImmutable("today");
+
+        $db_date_midnight = $db_date->setTime(0, 0, 0);
+
+        $row["is_today"] = ($db_date_midnight == $today);
+
+        $date = new DateTime($row["only_date"]);
+      } else {
+        $row["is_today"] = true;
+      }
+    }
     $search_data[] = $row;
   }
 }
@@ -102,29 +172,3 @@ $stmt->close();
 $conn->close();
 
 echo json_encode($search_data);
-
-// if ($page === 'removed_pm_page') {
-//   $table = "tbl_removed";
-//   $reason = $_GET["reason"];
-
-//   // this can be an equal one and not LIKE because it's a dropdown
-//   $removed_query = "reason = ?";
-
-//   if ($query !== "") {
-//     // if the query is not blank, include it in the final sql
-//     $sql_query .= " AND " . $removed_query;
-
-//     // add one param for the reason
-//     $params .= "s";
-//     // and value
-//     array_push($values, $reason);
-//   } else {
-//     // if it is blank, just return ones that match the reason
-//     $sql_query = $removed_query;
-
-//     // only one param needed now
-//     $params = "s";
-//     // and only one value
-//     $values = [$reason];
-//   }
-// }
