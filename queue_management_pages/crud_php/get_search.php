@@ -1,5 +1,5 @@
 <?php
-include "../../global/patient_database_connection.php";
+include "../../global/connection.php";
 session_start();
 
 header("Content-Type: application/json");
@@ -19,90 +19,62 @@ if (empty($department)) {
   exit();
 }
 
-$query = $_GET["query"];
 $page = $_GET["page"];
 
-// !!! by default it's for the queue_m_page !!!
-$table = "tbl_queues";
-$sql_query = "(queue_id LIKE ? OR patient_id LIKE ? OR patient_name LIKE ?)";
+$offset = isset($_GET["offset"]) ? (int)$_GET["offset"] : 0;
 
-// searches for matches on both sides of string
-$wildcard_string = "%" . $query . "%";
+// !!! by default it's for the tbl_completed !!!
 
-// three params for three identical wildcard strings
-$params = "sss";
-
-$values = [$wildcard_string, $wildcard_string, $wildcard_string];
+$table = "tbl_completed";
+$select_columns = "queue_id, patient_id, patient_name, marked_by, DATE(marked_time_and_date) AS only_date, TIME_FORMAT(marked_time_and_date, '%h:%i %p') AS Time12";
 
 // !!! ----------------------------------- !!!
 
-switch ($page) {
-  case 'completed_pm_page':
-    $date = $_GET["date"];
-    $table = "tbl_completed";
-    $completed_query = "marked_time_and_date >= ? 
-                        AND marked_time_and_date < ? + INTERVAL 1 DAY";
-    $completed_values = [$date, $date];
+if (isset($_GET["query"])) {
+  // if query isn't blank
+  // make it the values for wildcard search
+  $query = $_GET["query"];
 
-    if ($query !== "") {
-      // if the query is not blank, include it in the final sql
-      $sql_query .= " AND " . $completed_query;
+  // searches for matches on both sides of string
+  $wildcard_string = "%" . $query . "%";
 
-      // add two more params for the date
-      $params .= "ss";
-      // and two more values
-      array_push($values, $completed_values);
-    } else {
-      // if the query is blank, just return ones that match the date
-      $sql_query = $completed_query;
+  // three params for three identical wildcard strings
+  $sql_query = "(queue_id LIKE ? OR patient_id LIKE ? OR patient_name LIKE ?)";
+  $params = "sss";
+  $values = [$wildcard_string, $wildcard_string, $wildcard_string];
 
-      // only two params now for date
-      $params = "ss";
-      // and only two values
-      $values = $completed_values;
-    }
-    break;
-  case 'removed_pm_page':
-    $table = "tbl_removed";
-    $reason = $_GET["reason"];
-
-    // this can be an equal one and not LIKE because it's a dropdown
-    $removed_query = "reason = ?";
-
-    if ($query !== "") {
-      // if the query is not blank, include it in the final sql
-      $sql_query .= " AND " . $removed_query;
-
-      // add one param for the reason
-      $params .= "s";
-      // and value
-      array_push($values, $reason);
-    } else {
-      // if it is blank, just return ones that match the reason
-      $sql_query = $removed_query;
-
-      // only one param needed now
-      $params = "s";
-      // and only one value
-      $values = [$reason];
-    }
-    break;
-
-    // you can't search in focused view so it's not here
+  // if there is date
+  // include it in the sql
+  if (isset($_GET["date"])) {
+    $sql_query .= "AND (marked_time_and_date >= ? AND 
+                   marked_time_and_date < ? + INTERVAL 1 DAY)";
+    $params .= "ss";
+    $dates = [$_GET["date"], $_GET["date"]];
+    $values = array_merge($values, $dates);
+  }
+} else {
+  // if query is blank
+  // make only date be basis
+  $sql_query = "(marked_time_and_date >= ? AND 
+                marked_time_and_date < ? + INTERVAL 1 DAY)";
+  $params = "ss";
+  $values = [$_GET["date"], $_GET["date"]];
 }
 
+array_push($values, $offset);
 
 
-
-$sql = "SELECT * FROM $table WHERE $sql_query";
+$sql = "SELECT $select_columns FROM $table WHERE department = ? AND $sql_query ORDER BY marked_time_and_date DESC LIMIT 50 OFFSET ? ";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param($params, ...$values);
+$stmt->bind_param("s" . $params . "i", $department, ...$values);
 $stmt->execute();
 $result = $stmt->get_result();
 
 $search_data = [];
 if ($result) {
   while ($row = $result->fetch_assoc()) {
+    $date = new DateTime($row["only_date"]);
+    $row["only_date"] = $date->format('F j, Y');
     $search_data[] = $row;
   }
 }
@@ -110,4 +82,30 @@ if ($result) {
 $stmt->close();
 $conn->close();
 
-echo json_encode(["success" => true, "results" => $search_data]);
+echo json_encode($search_data);
+
+// if ($page === 'removed_pm_page') {
+//   $table = "tbl_removed";
+//   $reason = $_GET["reason"];
+
+//   // this can be an equal one and not LIKE because it's a dropdown
+//   $removed_query = "reason = ?";
+
+//   if ($query !== "") {
+//     // if the query is not blank, include it in the final sql
+//     $sql_query .= " AND " . $removed_query;
+
+//     // add one param for the reason
+//     $params .= "s";
+//     // and value
+//     array_push($values, $reason);
+//   } else {
+//     // if it is blank, just return ones that match the reason
+//     $sql_query = $removed_query;
+
+//     // only one param needed now
+//     $params = "s";
+//     // and only one value
+//     $values = [$reason];
+//   }
+// }

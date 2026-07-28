@@ -22,15 +22,6 @@ function formatTimeMStoHHMMSS(miliseconds) {
 
 let queue_interval;
 
-function clearURLSearchParams() {
-  // 1. Grab just the base URL path (e.g., "/PatientQueueSystem/index.php")
-  // This automatically ignores everything after the "?"
-  const cleanUrl = window.location.pathname;
-
-  // 2. Push the clean URL to the browser
-  window.history.pushState(null, "", cleanUrl);
-}
-
 function updateTimeElements(queue_time, call_time) {
   // clear interval before starting another one
   clearInterval(queue_interval);
@@ -71,7 +62,19 @@ let first_loaded_page = "queue_m_page";
 const query_string = window.location.search;
 
 // get search parameters
-const url_params = new URLSearchParams(query_string);
+let url_params = new URLSearchParams(query_string);
+
+function clearURLSearchParams() {
+  // 1. Grab just the base URL path (e.g., "/PatientQueueSystem/index.php")
+  // This automatically ignores everything after the "?"
+  const cleanUrl = window.location.pathname;
+
+  // 2. Push the clean URL to the browser
+  window.history.pushState(null, "", cleanUrl);
+
+  // 3. Update url_params
+  url_params = new URLSearchParams(query_string);
+}
 
 if (url_params.has("page")) {
   first_loaded_page = url_params.get("page");
@@ -96,6 +99,13 @@ if (url_params.has("page")) {
     }
   });
 }
+
+// scrolling variables for completed and removed pages
+let is_fetching = false;
+let current_offset = 0;
+let has_more_records = true;
+
+let record_total = 0;
 
 loadPage(first_loaded_page);
 
@@ -138,6 +148,12 @@ pageButtonElements.forEach((page_button) => {
 });
 
 function loadPage(page) {
+  // reset global variables for scrolling
+  is_fetching = false;
+  current_offset = 0;
+  has_more_records = true;
+  record_total = 0;
+
   switch (page) {
     case "queue_m_page":
       document.title = "Queue | Patient Queue System";
@@ -269,7 +285,7 @@ function loadPage(page) {
             return;
           }
 
-          fetchedHTML = `
+          let fetchedHTML = `
               <form action="" method="get" class="search" id="search_form">
                 <fieldset>
                   <label for="search">Search by Patient ID/Queue ID/Name</label>
@@ -304,19 +320,7 @@ function loadPage(page) {
                     </tr>
                   </thead>
                   <tbody>`;
-          data.forEach((completed_patient) => {
-            fetchedHTML += `<tr>`;
-            fetchedHTML += `<td>${completed_patient.queue_id}</td>`;
-            fetchedHTML += `<td>${completed_patient.patient_id}</td>`;
-            fetchedHTML += `<td>${completed_patient.patient_name}</td>`;
-            // time is formatted automatically by php, so "Time12"
-            fetchedHTML += `<td>${completed_patient["Time12"]}</td>`;
-            // see user that marked the record as completed if admin
-            if (completed_patient.marked_by) {
-              fetchedHTML += `<td>${completed_patient.marked_by}</td>`;
-            }
-            fetchedHTML += `</tr>`;
-          });
+          fetchedHTML += generateCompletedRemovedTables(page, data);
           fetchedHTML += `
                   </tbody>
                 </table>
@@ -325,6 +329,7 @@ function loadPage(page) {
 
           articleElement.innerHTML = fetchedHTML;
           setSearchFunction(page);
+          setLoadMoreAtScroll();
         });
       break;
     case "removed_pm_page":
@@ -1092,7 +1097,7 @@ if (counterStaffSelectElement) {
   });
 }
 
-function getDepartmentQueue(selected_department) {
+function getDepartmentQueue(selected_department, reload_after = true) {
   fetch("queue_management_pages/crud_php/counter_change_department.php", {
     headers: { "Content-Type": "application/json" },
     method: "POST",
@@ -1113,7 +1118,9 @@ function getDepartmentQueue(selected_department) {
       }
 
       if (data.success) {
-        loadPage(current_page);
+        if (reload_after) {
+          loadPage(current_page);
+        }
       }
     });
 }
@@ -1156,16 +1163,39 @@ function setSearchFunction(page) {
   if (counterStaffSelectElement) {
     if (current_url_params.has("department")) {
       counterStaffSelectElement.value = current_url_params.get("department");
-      getDepartmentQueue(counterStaffSelectElement.value);
+      getDepartmentQueue(counterStaffSelectElement.value, false);
+    }
+  }
+
+  // load search if it exists
+  if (current_url_params.has("page")) {
+    const get_page = current_url_params.get("page");
+    if (get_page === "queue_m_page") {
+      searchDatabaseRecords(current_url_params.get("query"), page, null);
+    } else {
+      let filter_data = null;
+
+      if (searchFilterElement) {
+        filter_data = {
+          parameter: searchFilterElement.id,
+          value: searchFilterElement.value,
+        };
+      }
+      searchDatabaseRecords(current_url_params.get("query"), page, filter_data);
     }
   }
 
   searchFormElement.addEventListener("submit", (e) => {
     e.preventDefault();
+    // reset global variables for searching + scrolling
+    is_fetching = false;
+    current_offset = 0;
+    has_more_records = true;
+
+    document.querySelector("div.table").scrollTo(0, 0);
     let filter_data = null;
 
     if (searchFilterElement) {
-      console.log("i'm in");
       filter_data = {
         parameter: searchFilterElement.id,
         value: searchFilterElement.value,
@@ -1178,6 +1208,11 @@ function setSearchFunction(page) {
 }
 
 function searchDatabaseRecords(query, page, filter_data) {
+  // reset for global variables for scrolling
+  let is_fetching = false;
+  current_offset = 0;
+  has_more_records = true;
+  record_total = 0;
   const params = new URLSearchParams();
   // gemini simplification of the longest if statement i have ever written
 
@@ -1223,17 +1258,22 @@ function searchDatabaseRecords(query, page, filter_data) {
   // Since we already proved isSearching is true in step 2, we can blindly append the page!
   params.append("page", page);
 
-  const params_query_string = params.toString();
+  let params_query_string = params.toString();
   const new_url = params_query_string
     ? `?${params_query_string}`
     : window.location.pathname;
 
   window.history.pushState({ path: new_url }, "", new_url);
 
+  // add the offset after link (prevents the results from being cut off)
+  params.append("offset", current_offset);
+  // add to query string
+  params_query_string = params.toString();
+
   if (page === "queue_m_page") {
     searchQueueManagementPageRecords(query);
   } else {
-    searchDatabaseRecords(query_value, page, filter_data);
+    getSearch(params_query_string);
   }
 }
 
@@ -1284,13 +1324,172 @@ function searchQueueManagementPageRecords(query) {
   );
 
   if (visible_rows_num === 0) {
-    if (!noResultsMessageElement) {
-      noResultsMessageElement = document.createElement("div");
-      noResultsMessageElement.className = "no_results_element";
-      noResultsMessageElement.textContent = "No matching queued records found.";
-      tableDivElement.appendChild(noResultsMessageElement);
+    noResultsFormatTable(
+      tableElement,
+      tableDivElement,
+      noResultsMessageElement,
+      1,
+    );
+  } else {
+    noResultsFormatTable(
+      tableElement,
+      tableDivElement,
+      noResultsMessageElement,
+    );
+  }
+}
+
+function setLoadMoreAtScroll() {
+  const tableDivElement = document.querySelector("div.table");
+
+  tableDivElement.addEventListener("scroll", () => {
+    if (is_fetching || !has_more_records) return;
+
+    const is_at_bottom =
+      tableDivElement.scrollTop + tableDivElement.clientHeight >=
+      tableDivElement.scrollHeight - 5;
+
+    if (is_at_bottom) {
+      loadMoreRecords();
+    }
+  });
+}
+
+function loadMoreRecords() {
+  // add 50 to current offset
+  current_offset += 50;
+  is_fetching = true;
+
+  if (current_page === "completed_pm_page") {
+    // determine if it is a search (get queries exist)
+    const current_url = window.location.search;
+    const current_params = new URLSearchParams(current_url);
+    if (current_params.size !== 0) {
+      // slice removes ? at beginning
+      // add offset to end
+      const updated_query_string = `${window.location.search.slice(1)}&offset=${current_offset}`;
+      getSearch(updated_query_string);
+      return;
     }
 
+    // normal scrolling
+    fetch("queue_management_pages/completed_management_page.php", {
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      body: JSON.stringify({
+        offset: current_offset,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok/File not found");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data.length);
+        if (data.length < 50) {
+          has_more_records = false;
+        }
+
+        const tableBodyElement = document.querySelector(".table tbody");
+        tableBodyElement.insertAdjacentHTML(
+          "beforeend",
+          generateCompletedRemovedTables(current_page, data),
+        );
+
+        is_fetching = false;
+      });
+  }
+}
+
+function getSearch(params_query_string) {
+  fetch(`queue_management_pages/crud_php/get_search.php?${params_query_string}`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok/File not found");
+      }
+
+      return response.json();
+    })
+    .then((data) => {
+      if (data.error) {
+        alert(`Error: ${data.error}`);
+        return;
+      }
+
+      console.log(data.length);
+      if (data.length < 50) {
+        has_more_records = false;
+      }
+
+      const tableDivElement = document.querySelector("div.table");
+      const tableElement = document.querySelector("div.table table");
+      let noResultsMessageElement = tableDivElement.querySelector(
+        ".no_results_element",
+      );
+
+      noResultsFormatTable(
+        tableElement,
+        tableDivElement,
+        noResultsMessageElement,
+      );
+
+      // if no found results and the offset hasn't been changed
+      // this is to prevent the message displaying if the number of results is a multiple of 50
+      if (data.length === 0 && current_offset === 0) {
+        noResultsFormatTable(
+          tableElement,
+          tableDivElement,
+          noResultsMessageElement,
+          1,
+        );
+      }
+      const tableBodyElement = document.querySelector(".table tbody");
+      if (current_offset === 0) {
+        // 0 offset means that this is the first search table load; rewrite the whole table
+        tableBodyElement.innerHTML = generateCompletedRemovedTables(
+          current_page,
+          data,
+        );
+      } else {
+        // if there's an offset, there's already search data, so append it to the end
+        const tableBodyElement = document.querySelector(".table tbody");
+        tableBodyElement.insertAdjacentHTML(
+          "beforeend",
+          generateCompletedRemovedTables(current_page, data),
+        );
+      }
+    });
+}
+
+function noResultsFormatTable(
+  tableElement,
+  tableDivElement,
+  noResultsMessageElement,
+  state = 0,
+) {
+  noResultsMessageElement = tableDivElement.querySelector(
+    ".no_results_element",
+  );
+
+  if (!noResultsMessageElement) {
+    noResultsMessageElement = document.createElement("div");
+    noResultsMessageElement.className = "no_results_element";
+    noResultsMessageElement.textContent =
+      "No matching completed records found.";
+    tableDivElement.appendChild(noResultsMessageElement);
+  }
+
+  // reset if 0, format flex if 1
+  if (state === 0) {
+    tableElement.style.display = "";
+    tableDivElement.style.display = "";
+    tableDivElement.style.alignItems = "";
+    tableDivElement.style.justifyContent = "";
+
+    if (noResultsMessageElement) noResultsMessageElement.style.display = "none";
+  } else {
     tableElement.style.display = "none";
 
     tableDivElement.style.display = "flex";
@@ -1298,12 +1497,42 @@ function searchQueueManagementPageRecords(query) {
     tableDivElement.style.justifyContent = "center";
 
     noResultsMessageElement.style.display = "";
-  } else {
-    tableElement.style.display = "";
-    tableDivElement.style.display = "";
-    tableDivElement.style.alignItems = "";
-    tableDivElement.style.justifyContent = "";
-
-    if (noResultsMessageElement) noResultsMessageElement.style.display = "none";
   }
+}
+
+function generateCompletedRemovedTables(page, data) {
+  let fetchedHTML = "";
+  if (page === "completed_pm_page") {
+    data.forEach((completed_patient) => {
+      record_total++;
+      fetchedHTML += `<tr>`;
+      fetchedHTML += `<td>${completed_patient.queue_id}</td>`;
+      fetchedHTML += `<td>${completed_patient.patient_id}</td>`;
+      fetchedHTML += `<td>${completed_patient.patient_name}</td>`;
+
+      // add date for admin
+      let date_completed = completed_patient.only_date
+        ? ":: " + completed_patient.only_date
+        : "";
+
+      // time is formatted automatically by php, so "Time12"
+      fetchedHTML += `<td>${completed_patient["Time12"]} ${date_completed}</td>`;
+
+      // see user who marked the record as completed if admin
+      if (completed_patient.marked_by) {
+        fetchedHTML += `<td>${completed_patient.marked_by}</td>`;
+      }
+    });
+    fetchedHTML += "</tr>";
+  }
+
+  if (!has_more_records) {
+    let message = `All completed patient records shown (${record_total})`;
+    if (window.location.search !== "") {
+      message = `All matching records shown. (${record_total})`;
+    }
+    fetchedHTML += `<tr><td colspan="5" style="text-align: center; background: var(--white-pure); border: none;">${message}</td></tr>`;
+  }
+
+  return fetchedHTML;
 }
