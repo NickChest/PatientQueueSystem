@@ -453,11 +453,16 @@ main {
   margin-left: 120px;
   padding: var(--page-padding-default);
 
+  display: flex;
+  flex-direction: column;
+
   header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     user-select: none;
+
+    flex-shrink: 0;
     h1 {
       font-family: var(--font-accent);
       font-size: var(--font-size-xxl);
@@ -507,6 +512,8 @@ main {
 
   .search {
     font-size: var(--font-size-default);
+    
+    flex-shrink: 0;
     input {
       display: block;
       width: 50%;
@@ -515,7 +522,13 @@ main {
   }
 
   article {
-    height: calc(100% - 84px);
+    /* height: calc(100% - 84px); */
+    flex-grow: 1;
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+
     .loading {
       font-size: var(--font-size-s);
       text-align: center;
@@ -548,7 +561,11 @@ main {
       user-select: none;
 
       margin-top: 25px;
-      height: calc(100% - 203px);
+      /* height: calc(100% - 203px); */
+
+      flex-grow: 1;
+      min-height: 0;
+
       overflow-y: auto;
       border: 1px solid var(--black-pure);
       scroll-behavior: unset;
@@ -773,6 +790,8 @@ main {
       margin-top: var(--page-padding-default);
       padding-inline: 15px;
       width: 20%;
+
+      flex-shrink: 0;
     }
   }
   article:has(.loading, .error, .empty) {
@@ -786,10 +805,13 @@ main {
 main {
   .queue_group {
     margin-top: var(--page-padding-default);
-    display: flex;
     gap: var(--page-padding-default);
+    flex-direction: row;
 
     .upcoming_patients {
+      display: flex;
+      flex-direction: column;
+
       .heading {
         font-size: var(--font-size-ml);
         font-weight: bold;
@@ -799,7 +821,9 @@ main {
 
       .patients_list {
         border: 1px solid var(--black-pure);
-        height: 68dvh;
+        /* height: 68dvh; */
+
+        flex-grow: 1;
         width: 23dvw;
         overflow: auto;
         overflow-x: hidden;
@@ -925,86 +949,79 @@ main {
 /* header */
 @media (max-width: 1600px) {
   main {
-    /* ... keep height, padding ... */
     margin-left: 96px; /* was 120px */
+    
+    header select {
+      background-size: 6.4rem; /* was 8rem */
+    }
+  
+    header .account_info img {
+      width: 56px; /* was 70px */
+    }
   }
 
-  header select {
-    /* ... keep other styles ... */
-    background-size: 6.4rem; /* was 8rem */
-  }
-
-  header .account_info img {
-    width: 56px; /* was 70px */
-  }
 }
 
 /* search */
 @media (max-width: 1600px) {
-  .search:has(+ .table.completed) fieldset:first-child input,
-  .search:has(+ .table.table.removed) fieldset:first-child input {
-    width: 480px; /* was 600px */
-  }
-
-  .search:has(+ .table.completed) fieldset:last-child input {
-    width: 240px; /* was 300px */
-  }
-}
-
-/* article */
-@media (max-width: 1600px) {
   main article {
-    height: calc(100% - var(--page-padding-default));
+    .search:has(+ .table.completed) fieldset:first-child input,
+    .search:has(+ .table.table.removed) fieldset:first-child input {
+      width: 480px; /* was 600px */
+    }
+  
+    .search:has(+ .table.completed) fieldset:last-child input {
+      width: 240px; /* was 300px */
+    }
   }
 }
 
 /* tables */
 @media (max-width: 1600px) {
-  .table table tbody .actions {
-    /* ... keep display, align-items, etc ... */
-    gap: 16px; /* was 20px */
-    padding-inline: 20px 84px; /* was 25px 105px */
-    margin-block: 8px; /* was 10px */
-  }
-
-  .table table tbody .actions .icon svg {
-    width: 20px; /* was 25px */
-    height: 20px; /* was 25px */
-  }
-
-  .table table tbody .actions .line {
-    /* ... keep width, background ... */
-    height: 38px; /* was 47px */
-  }
-
-  .table table tbody .actions .drag_handle {
-    /* ... keep display, cursor, position ... */
-    right: 20px; /* was 25px */
-  }
-
-  .table.queue table thead th:first-child {
-    width: 96px; /* was 120px */
-  }
-
-  .table.queue table thead th:nth-child(2),
-  .table.queue table thead th:nth-child(3) {
-    width: 184px; /* was 230px */
-  }
-
-  .table.queue table thead th:nth-child(5) {
-    width: 320px; /* was 400px */
-  }
-
-  .table.completed tbody tr td,
-  .table.removed td {
-    height: 56px; /* was 70px */
+  main article {
+    .table table tbody .actions {
+      gap: 16px; /* was 20px */
+      padding-inline: 20px 84px; /* was 25px 105px */
+      margin-block: 8px; /* was 10px */
+    }
+  
+    .table table tbody .actions .icon svg {
+      width: 20px; /* was 25px */
+      height: 20px; /* was 25px */
+    }
+  
+    .table table tbody .actions .line {
+      height: 38px; /* was 47px */
+    }
+  
+    .table table tbody .actions .drag_handle {
+      right: 20px; /* was 25px */
+      width: 48px;
+    }
+  
+    .table.queue table thead th:first-child {
+      width: 96px; /* was 120px */
+    }
+  
+    .table.queue table thead th:nth-child(2),
+    .table.queue table thead th:nth-child(3) {
+      width: 184px; /* was 230px */
+    }
+  
+    .table.queue table thead th:nth-child(5) {
+      width: 320px; /* was 400px */
+    }
+  
+    .table.completed tbody tr td,
+    .table.removed td {
+      height: 56px; /* was 70px */
+    }
   }
 }
 
 /* focused_view */
 @media (max-width: 1600px) {
   main .queue_group .patient_queue_info .patient_summary {
-    /* ... keep font-size ... */
     padding-top: 40px; /* was 49px */
   }
 
@@ -1014,7 +1031,6 @@ main {
   }
 
   main .queue_group .patient_queue_info .buttons button svg {
-    /* ... keep display ... */
     width: 40px; /* was 50px */
     height: 40px; /* was 50px */
   }
