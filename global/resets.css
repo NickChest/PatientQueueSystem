@@ -170,7 +170,7 @@ input[type="submit"] {
   font-family: var(--font-accent);
   border-radius: 22px;
   box-shadow: 0 4px 4px var(--shadow-default);
-  transition: 0.5s;
+  transition: 0.5s scale, 0.5s background;
   font-size: var(--font-size-default);
 }
 

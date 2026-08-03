@@ -302,6 +302,29 @@ nav.open {
       .required {
         color: var(--red-default);
       }
+      .search_warning:not(:empty) {
+        margin-bottom: var(--page-padding-half);
+      }
+    }
+  }
+  .popup.search.patient_id,
+  .popup.search.popup.search.patient_details {
+    input.warning {
+      border-color: var(--red-default);
+      border-style: solid;
+    }
+    input.warning:focus {
+      border-color: var(--red-default);
+      outline: none;
+    }
+    label.warning {
+      color: var(--red-default);
+    }
+    .search_warning:not(:empty) {
+      margin-top: 10px;
+      color: var(--red-default);
+      font-size: var(--font-size-s);
+      text-align: center;
     }
   }
   .popup.add_patient_confirm {
@@ -408,6 +431,17 @@ nav.open {
             width: 100%;
           }
         }
+        .add_patient button.disabled {
+          pointer-events: none;
+          transition: none;
+        }
+      }
+      .record.disabled {
+        filter: saturate(0);
+        box-shadow: none;
+        cursor: not-allowed;
+        opacity: 0.5;
+        box-shadow: none;
       }
     }
   }

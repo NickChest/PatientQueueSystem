@@ -19,7 +19,6 @@ function addPatientRecordSearch(search_query) {
 
         // if query was successful
         if (data.found) {
-          // and record/s was/were found
           if (!data.multiple) {
             // and if only one record found
             const popup_data = {
@@ -37,17 +36,38 @@ function addPatientRecordSearch(search_query) {
           }
         } else {
           navDimmer.classList.remove("loading");
+          const popupFormElement =
+            document.getElementById("patient_id_search_form") ||
+            document.getElementById("patient_details_search_form");
+
+          const inputElements = popupFormElement.querySelectorAll("input");
+          const warningElement =
+            popupFormElement.querySelector(".search_warning");
+
+          inputElements.forEach(inputElement => {
+            if (inputElement.value) {
+              inputElement.classList.add("warning");
+              inputElement.previousElementSibling.classList.add("warning");
+            }
+
+            inputElement.addEventListener("input", () => {
+              // remove warning class when user types again
+              inputElements.forEach(allInput => {
+                allInput.classList.remove("warning");
+                allInput.previousElementSibling.classList.remove("warning");
+              })
+
+              warningElement.innerHTML = "";
+            })
+          })
 
           if (data.in_queue) {
             // if in queue already
-            alert(
-              `Existing Queued Patient:\n     Patient ID ${data.patient_id} (${data.patient_name}) is already in the queue.`,
-            );
+            warningElement.innerHTML = `<span class='bolded'>Patient ID ${data.patient_id} (${data.patient_name})</span> <br />is already in the queue.`;
           } else {
             // no records found
-            alert(
-              `No Records Found:\n     No matching patient records were found for the entered information.`,
-            );
+
+            warningElement.innerHTML = `No matching patient records were found.`;
           }
         }
       } else {

@@ -716,6 +716,7 @@ function showPopup(popup_data, popup_type) {
                   autocomplete="off"
                   required>
               </div>
+              <div class='search_warning'></div>
             </fieldset>
             <div id="option_name_and_birthdate" title="Search using name and birthdate">Search using name and birthdate</div>
             <fieldset>
@@ -774,6 +775,7 @@ function showPopup(popup_data, popup_type) {
                 <input type='date' name='birthdate' id='birthdate' required>
               </div>
             </fieldset>
+              <div class='search_warning'></div>
             <fieldset>
               <button class='button-default bg-blue' id='search_records'>Search Records</button>
             </fieldset>
@@ -829,8 +831,20 @@ function showPopup(popup_data, popup_type) {
       index = 0;
 
       popup_data.patient_records.forEach((record) => {
+        let disabled_class = "";
+        let warning_title = "";
+        // separated this for legibility; this makes it so that it's ignored by addeventlistener
+        let button_class = "select_record";
+
+        // disable button if already in queue
+        if (record.is_in_queue) {
+          disabled_class = "disabled";
+          warning_title = "title='Patient has already been added to queue'"
+          button_class = "";
+        }
+
         recordPopupHTML += `
-          <div class='record'>
+          <div class='record ${disabled_class}' ${warning_title}>
             <div class='info_summary'>
               <div class='info'>
                 <span>Patient ID:</span>
@@ -850,7 +864,7 @@ function showPopup(popup_data, popup_type) {
               </div>
             </div>
             <div class='add_patient'>
-              <button class='button-default bg-blue select_record' data-index='${index}'>Select Record</button>
+              <button class='button-default bg-blue ${button_class} ${disabled_class}' data-index='${index}' ${disabled_class}>Select Record</button>
             </div>                  
           </div>
         `;
@@ -871,7 +885,6 @@ function showPopup(popup_data, popup_type) {
 
       popupContainerElement.insertAdjacentHTML("beforeend", recordPopupHTML);
 
-      // 3. Attach your back button logic
       document
         .querySelector(".multi_record_back")
         .addEventListener("click", () => {
@@ -1541,7 +1554,7 @@ function generateCompletedRemovedTables(page, data) {
     fetchedHTML += "</tr>";
   } else if (page === "removed_pm_page") {
     colspan = 7;
-    
+
     data.forEach((removed_patient) => {
       record_total++;
       fetchedHTML += `<tr>`;

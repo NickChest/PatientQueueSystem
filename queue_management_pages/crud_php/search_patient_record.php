@@ -104,6 +104,7 @@ if ($result->num_rows === 0) {
     $multiple_patients = [];
 
     while ($row = $result->fetch_assoc()) {
+      $row["is_in_queue"] = isInQueue($row["patient_id"], $user_department, $user_privileges, $conn);
       $multiple_patients[] = $row;
     }
 
