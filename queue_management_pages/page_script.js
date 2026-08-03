@@ -1515,7 +1515,7 @@ function noResultsFormatTable(
 function generateCompletedRemovedTables(page, data) {
   let fetchedHTML = "";
   let colspan = 5;
-  console.log(data)
+  // console.log(data)
   if (page === "completed_pm_page") {
     data.forEach((completed_patient) => {
       record_total++;

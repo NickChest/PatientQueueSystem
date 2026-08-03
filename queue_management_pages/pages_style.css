@@ -2,7 +2,7 @@ body {
   height: 100dvh;
 }
 .record_link {
-  font-size: 35px;
+  font-size: var(--font-size-ml);
 }
 .record_link > span {
   color: var(--blue-default);
@@ -53,7 +53,7 @@ nav {
     height: 150px;
   }
   li {
-    background: var(--white-pure);
+    /* background: var(--white-pure); */
     transition: background-color 0.5s;
     .icon {
       width: 50px;
@@ -63,7 +63,7 @@ nav {
     }
     .name {
       font-family: var(--font-accent);
-      font-size: 30px;
+      font-size: var(--font-size-l);
     }
   }
   li:not(:first-child, .logout):hover {
@@ -157,21 +157,21 @@ nav.open {
     left: 50%;
     top: 50%;
     translate: -50% -50%;
-    font-size: 25px;
+    font-size: var(--font-size-default);
     min-width: 25%;
     box-shadow: 0 7px 7px var(--shadow-default);
     user-select: none;
 
     .popup_heading {
       font-family: var(--font-accent);
-      font-size: 30px;
+      font-size: var(--font-size-l);
       text-align: center;
     }
     .queue_id {
       margin-top: 20px;
     }
     .emphasis {
-      font-size: 40px;
+      font-size: var(--font-size-mml);
       font-weight: bold;
     }
     .record_link {
@@ -426,11 +426,11 @@ main {
     user-select: none;
     h1 {
       font-family: var(--font-accent);
-      font-size: 60px;
+      font-size: var(--font-size-xxl);
     }
     select {
       font-family: var(--font-accent);
-      font-size: 60px;
+      font-size: var(--font-size-xxl);
       appearance: none;
       border: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' d='M0 0h24v24H24z'/%3E%3Cpath d='M7 10l5 5 5-5z' fill='currentColor'/%3E%3C/svg%3E");
@@ -441,7 +441,7 @@ main {
       line-height: 2ch;
       option {
         background: var(--white-pure);
-        font-size: 30px;
+        font-size: var(--font-size-l);
         font-family: var(--font-default);
       }
     }
@@ -456,7 +456,7 @@ main {
       display: flex;
       align-items: center;
       text-align: right;
-      font-size: 20px;
+      font-size: var(--font-size-s);
 
       .text {
         margin-right: 20px;
@@ -472,30 +472,30 @@ main {
   }
 
   .search {
-    font-size: 25px;
+    font-size: var(--font-size-default);
     input {
       display: block;
       width: 50%;
-      font-size: 25px;
+      font-size: var(--font-size-default);
     }
   }
 
   article {
     height: calc(100% - 84px);
     .loading {
-      font-size: 20px;
+      font-size: var(--font-size-s);
       text-align: center;
       pointer-events: none;
       user-select: none;
     }
     .error {
       color: var(--red-default);
-      font-size: 30px;
+      font-size: var(--font-size-l);
       pointer-events: none;
       user-select: none;
     }
     .empty {
-      font-size: 30px;
+      font-size: var(--font-size-l);
       pointer-events: none;
       user-select: none;
     }
@@ -521,7 +521,7 @@ main {
 
       table {
         width: 100%;
-        font-size: 25px;
+        font-size: var(--font-size-default);
         position: relative;
         border-collapse: separate;
         background: var(--_bg);
@@ -595,7 +595,7 @@ main {
             margin-block: 10px;
             button {
               width: auto;
-              font-size: 20px;
+              font-size: var(--font-size-s);
               display: flex;
               justify-content: center;
             }
@@ -720,7 +720,7 @@ main {
       td {
         height: 70px;
         button {
-          font-size: 20px;
+          font-size: var(--font-size-s);
         }
       }
       td:last-child {
@@ -728,9 +728,10 @@ main {
       }
     }
 
+    /* no results searching */
     .table {
       .no_results_element {
-        font-size: 30px;
+        font-size: var(--font-size-l);
       }
     }
 
@@ -756,7 +757,7 @@ main {
 
     .upcoming_patients {
       .heading {
-        font-size: 35px;
+        font-size: var(--font-size-ml);
         font-weight: bold;
         text-align: center;
         margin-bottom: 10px;
@@ -773,10 +774,10 @@ main {
           border-bottom: 1px solid var(--black-pure);
           .queue_id {
             font-weight: bold;
-            font-size: 35px;
+            font-size: var(--font-size-ml);
           }
           .name {
-            font-size: 25px;
+            font-size: var(--font-size-default);
           }
         }
 
@@ -803,21 +804,21 @@ main {
       text-align: center;
 
       .patient_summary {
-        font-size: 40px;
+        font-size: var(--font-size-mml);
         padding-top: 49px;
 
         .now_serving {
           line-height: 1ch;
         }
         .queue_id {
-          font-size: 150px;
+          font-size: var(--font-size-xg);
           font-weight: bold;
           line-height: 2ch;
         }
       }
 
       .wait_summary {
-        font-size: 30px;
+        font-size: var(--font-size-l);
         margin-block: var(--page-padding-default);
       }
 
@@ -843,5 +844,144 @@ main {
   }
   .queue_group:has(.empty) {
     margin-top: 0;
+  }
+}
+
+/* media queries */
+/* nav */
+@media (max-width: 1600px) {
+  nav {
+    /* ... keep background, box-shadow, z-index ... */
+    padding-top: 16px; /* was 20px */
+  }
+
+  nav li:not(.more) {
+    /* ... keep cursor, display, etc ... */
+    width: 96px; /* was 120px */
+    height: 80px; /* was 100px */
+  }
+  nav.open li {
+    width: 100%;
+  }
+
+  nav li.focused_view {
+    /* ... keep position, bottom ... */
+    height: 120px; /* was 150px */
+  }
+
+  nav li .icon {
+    width: 40px; /* was 50px */
+  }
+
+  nav li.logout {
+    /* ... keep position, bottom, left, right ... */
+    padding: 20px; /* was 25px */
+  }
+
+  nav.open li.branding {
+    width: 256px; /* was 320px */
+  }
+
+  nav.open li.focused_view {
+    height: 80px; /* was 100px */
+    bottom: 86px; /* was 107px */
+  }
+}
+
+/* header */
+@media (max-width: 1600px) {
+  main {
+    /* ... keep height, padding ... */
+    margin-left: 96px; /* was 120px */
+  }
+
+  header select {
+    /* ... keep other styles ... */
+    background-size: 6.4rem; /* was 8rem */
+  }
+
+  header .account_info img {
+    width: 56px; /* was 70px */
+  }
+}
+
+/* search */
+@media (max-width: 1600px) {
+  .search:has(+ .table.completed) fieldset:first-child input,
+  .search:has(+ .table.table.removed) fieldset:first-child input {
+    width: 480px; /* was 600px */
+  }
+
+  .search:has(+ .table.completed) fieldset:last-child input {
+    width: 240px; /* was 300px */
+  }
+}
+
+/* article */
+@media (max-width: 1600px) {
+  main article {
+    height: calc(100% - var(--page-padding-default));
+  }
+}
+
+/* tables */
+@media (max-width: 1600px) {
+  .table table tbody .actions {
+    /* ... keep display, align-items, etc ... */
+    gap: 16px; /* was 20px */
+    padding-inline: 20px 84px; /* was 25px 105px */
+    margin-block: 8px; /* was 10px */
+  }
+
+  .table table tbody .actions .icon svg {
+    width: 20px; /* was 25px */
+    height: 20px; /* was 25px */
+  }
+
+  .table table tbody .actions .line {
+    /* ... keep width, background ... */
+    height: 38px; /* was 47px */
+  }
+
+  .table table tbody .actions .drag_handle {
+    /* ... keep display, cursor, position ... */
+    right: 20px; /* was 25px */
+  }
+
+  .table.queue table thead th:first-child {
+    width: 96px; /* was 120px */
+  }
+
+  .table.queue table thead th:nth-child(2),
+  .table.queue table thead th:nth-child(3) {
+    width: 184px; /* was 230px */
+  }
+
+  .table.queue table thead th:nth-child(5) {
+    width: 320px; /* was 400px */
+  }
+
+  .table.completed tbody tr td,
+  .table.removed td {
+    height: 56px; /* was 70px */
+  }
+}
+
+/* focused_view */
+@media (max-width: 1600px) {
+  main .queue_group .patient_queue_info .patient_summary {
+    /* ... keep font-size ... */
+    padding-top: 40px; /* was 49px */
+  }
+
+  main .queue_group .patient_queue_info .buttons button {
+    padding-inline: 40px; /* was 50px */
+    padding-block: 16px; /* was 20px */
+  }
+
+  main .queue_group .patient_queue_info .buttons button svg {
+    /* ... keep display ... */
+    width: 40px; /* was 50px */
+    height: 40px; /* was 50px */
   }
 }

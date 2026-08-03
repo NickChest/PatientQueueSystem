@@ -33,7 +33,7 @@ $order_clause = "marked_time_and_date";
 
 if ($_SESSION["privileges"] === "admin") {
   $date_clause = "";
-  $user_clause = "marked_by, DATE(marked_time_and_date) AS only_date, TIME_FORMAT(marked_time_and_date, '%h:%i %p') AS Time12";
+  $user_clause = ", marked_by, DATE(marked_time_and_date) AS only_date, TIME_FORMAT(marked_time_and_date, '%h:%i %p') AS Time12";
 }
 
 $sql_query = "";
@@ -64,6 +64,7 @@ if ($page === 'completed_pm_page') {
 
   // if there is date
   // include it in the sql
+
   if (isset($_GET["date"])) {
     $sql_query .= "AND (marked_time_and_date >= ? AND 
                    marked_time_and_date < ? + INTERVAL 1 DAY)";
@@ -148,6 +149,7 @@ if ($result) {
     if (isset($row["only_date"])) {
       $date = new DateTime($row["only_date"]);
       $row["only_date"] = $date->format('F j, Y');
+      $row["sql"] = $sql;
     }
 
     if ($page === "removed_pm_page") {

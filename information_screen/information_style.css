@@ -12,7 +12,7 @@ body {
   align-items: center;
   justify-content: center;
   color: var(--white-pure);
-  font-size: 50px;
+  font-size: var(--font-size-xml);
 }
 
 header {
@@ -21,7 +21,7 @@ header {
   display: flex;
   justify-content: space-between;
   padding: 20px 60px;
-  font-size: 50px;
+  font-size: var(--font-size-xml);
   position: relative;
 
   .title {
@@ -57,15 +57,15 @@ main article:nth-child(4) {
   grid-row: span 2;
 
   .service_name {
-    font-size: 60px;
+    font-size: var(--font-size-xxl);
     margin-bottom: 25px;
   }
   .now_serving,
   .num_waiting {
-    font-size: 30px;
+    font-size: var(--font-size-l);
   }
   .queue_id {
-    font-size: 100px;
+    font-size: var(--font-size-g);
   }
   .num_waiting {
     margin-top: 25px;
@@ -82,15 +82,15 @@ main article:nth-child(n + 5) {
   background: var(--tbl-orange-default);
 
   .service_name {
-    font-size: 27px;
+    font-size: var(--font-size-service);
     text-align: center;
   }
   .now_serving,
   .num_waiting {
-    font-size: 20px;
+    font-size: var(--font-size-s);
   }
   .queue_id {
-    font-size: 45px;
+    font-size: var(--font-size-xl);
   }
   .num_waiting {
     margin-top: 25px;
@@ -147,4 +147,69 @@ main article:nth-child(14) {
   grid-column-end: 21 !important;
   grid-row-start: 3 !important;
   grid-row-end: 5 !important;
+}
+
+/* media queries */
+@media (max-width: 1600px) {
+  /* header and main */
+  header {
+    padding: 16px 48px; /* was 20px 60px */
+    font-size: var(--font-size-xml);
+    position: relative;
+
+    .title {
+      position: absolute;
+      left: 50%;
+      translate: -50% 0;
+    }
+  }
+
+  main {
+    height: calc(100% - 88px); /* was 110px */
+  }
+
+  /* articles (1-4) */
+  main article:first-child,
+  main article:nth-child(2),
+  main article:nth-child(3),
+  main article:nth-child(4) {
+    background: var(--tbl-green-accent);
+    grid-column: span 5;
+    grid-row: span 2;
+
+    .service_name {
+      font-size: var(--font-size-xxl);
+      margin-bottom: 20px; /* was 25px */
+    }
+    .now_serving,
+    .num_waiting {
+      font-size: var(--font-size-l);
+    }
+    .queue_id {
+      font-size: var(--font-size-g);
+    }
+    .num_waiting {
+      margin-top: 20px; /* was 25px */
+    }
+  }
+
+  /* articles (5+) */
+  main article:nth-child(n + 5) {
+    background: var(--tbl-orange-default);
+
+    .service_name {
+      font-size: var(--font-size-service);
+      text-align: center;
+    }
+    .now_serving,
+    .num_waiting {
+      font-size: var(--font-size-s);
+    }
+    .queue_id {
+      font-size: var(--font-size-xl);
+    }
+    .num_waiting {
+      margin-top: 20px; /* was 25px */
+    }
+  }
 }

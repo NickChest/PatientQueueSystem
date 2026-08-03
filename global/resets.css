@@ -114,7 +114,6 @@ input {
   font-family: inherit;
 }
 
-
 :root {
   --padding-default: 3rem;
   --radius-default: 3rem;
@@ -143,6 +142,19 @@ input {
   --shadow-default: #00000040;
   --light-default: #ffffffbd;
   --blue-shadow-default: #123d6340;
+
+  --font-size-xxs: 12px;
+  --font-size-s: 20px;
+  --font-size-default: 25px;
+  --font-size-service: 27px;
+  --font-size-l: 30px;
+  --font-size-ml: 35px;
+  --font-size-mml: 40px;
+  --font-size-xl: 45px;
+  --font-size-xml: 50px;
+  --font-size-xxl: 60px;
+  --font-size-g: 100px;
+  --font-size-xg: 150px;
 }
 
 input[type="text"],
@@ -159,7 +171,7 @@ input[type="submit"] {
   border-radius: 22px;
   box-shadow: 0 4px 4px var(--shadow-default);
   transition: 0.5s;
-  font-size: 25px;
+  font-size: var(--font-size-default);
 }
 
 .button-default {
@@ -173,7 +185,6 @@ input[type="submit"] {
   scale: 1.03;
   --_current-color: var(--_current-color-dim);
   box-shadow: 0 6px 5px var(--shadow-default);
-
 }
 
 .button-invert {
@@ -208,4 +219,26 @@ input[type="submit"] {
   position: absolute;
   inset: 0;
   z-index: -1;
+}
+
+@media (max-width: 1600px) {
+  :root {
+    /* Padding scaled down */
+    --page-padding-default: 40px; /* was 50px */
+    --page-padding-half: 20px; /* was 25px */
+
+    /* Fonts scaled down */
+    --font-size-xxs: 10px; /* was 12px */
+    --font-size-s: 16px; /* was 20px */
+    --font-size-default: 20px; /* was 25px */
+    --font-size-service: 22px; /* was 27px */
+    --font-size-l: 24px; /* was 30px */
+    --font-size-ml: 28px; /* was 35px */
+    --font-size-mml: 32px; /* was 40px */
+    --font-size-xl: 36px; /* was 45px */
+    --font-size-xml: 40px; /* was 50px */
+    --font-size-xxl: 48px; /* was 60px */
+    --font-size-g: 80px; /* was 100px */
+    --font-size-xg: 120px; /* was 150px */
+  }
 }
