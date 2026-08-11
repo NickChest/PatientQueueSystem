@@ -445,6 +445,33 @@ nav.open {
       }
     }
   }
+  .popup.scan_id {
+    .webcam_feed {
+      position: relative;
+      width: 30vw;
+      margin-block: var(--page-padding-half);
+      overflow: hidden;
+
+      video {
+        width: 100%;
+        height: 100%;
+      }
+
+      .guide {
+        position: absolute;
+        inset: 0;
+        margin-block: auto;
+        margin-inline: 5%;
+        aspect-ratio: 3 / 2;
+        --s: 40px; /* size of the corners */
+        border: 4px solid var(--light-default);
+        mask:
+          conic-gradient(#000 0 0) content-box,
+          conic-gradient(at var(--s) var(--s), #0000 75%, #000 0) 0 0 /
+            calc(100% - var(--s)) calc(100% - var(--s));
+      }
+    }
+  }
 }
 
 /* for management pages (Queue, Completed, Removed) */
@@ -512,7 +539,7 @@ main {
 
   .search {
     font-size: var(--font-size-default);
-    
+
     flex-shrink: 0;
     input {
       display: block;
@@ -525,6 +552,7 @@ main {
     /* height: calc(100% - 84px); */
     flex-grow: 1;
     min-height: 0;
+    margin-top: calc(var(--page-padding-half) / 2);
 
     display: flex;
     flex-direction: column;
@@ -794,7 +822,7 @@ main {
       flex-shrink: 0;
     }
   }
-  article:has(.loading, .error, .empty) {
+  article:has(> .loading, > .error, > .empty) {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -900,9 +928,6 @@ main {
       }
     }
   }
-  .queue_group:has(.empty) {
-    margin-top: 0;
-  }
 }
 
 /* media queries */
@@ -950,16 +975,15 @@ main {
 @media (max-width: 1600px) {
   main {
     margin-left: 96px; /* was 120px */
-    
+
     header select {
       background-size: 6.4rem; /* was 8rem */
     }
-  
+
     header .account_info img {
       width: 56px; /* was 70px */
     }
   }
-
 }
 
 /* search */
@@ -969,7 +993,7 @@ main {
     .search:has(+ .table.table.removed) fieldset:first-child input {
       width: 480px; /* was 600px */
     }
-  
+
     .search:has(+ .table.completed) fieldset:last-child input {
       width: 240px; /* was 300px */
     }
@@ -984,34 +1008,34 @@ main {
       padding-inline: 20px 84px; /* was 25px 105px */
       margin-block: 8px; /* was 10px */
     }
-  
+
     .table table tbody .actions .icon svg {
       width: 20px; /* was 25px */
       height: 20px; /* was 25px */
     }
-  
+
     .table table tbody .actions .line {
       height: 38px; /* was 47px */
     }
-  
+
     .table table tbody .actions .drag_handle {
       right: 20px; /* was 25px */
       width: 48px;
     }
-  
+
     .table.queue table thead th:first-child {
       width: 96px; /* was 120px */
     }
-  
+
     .table.queue table thead th:nth-child(2),
     .table.queue table thead th:nth-child(3) {
       width: 184px; /* was 230px */
     }
-  
+
     .table.queue table thead th:nth-child(5) {
       width: 320px; /* was 400px */
     }
-  
+
     .table.completed tbody tr td,
     .table.removed td {
       height: 56px; /* was 70px */

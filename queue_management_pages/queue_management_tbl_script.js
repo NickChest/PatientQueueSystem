@@ -34,6 +34,7 @@ function navFunction() {
 function resetPopupDimmer() {
   popupContainerElement.innerHTML = "";
   navDimmer.className = "";
+  closeWebcamStream();
 }
 
 // ------ FUNCTION TO ADD QUEUE MANAGEMENT PAGE FEATURES ------

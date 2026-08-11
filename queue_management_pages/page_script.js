@@ -611,6 +611,25 @@ function showPopup(popup_data, popup_type) {
 
       popupContainerElement.innerHTML = popupHTML;
       break;
+    case "failed_popup":
+      popupHTML = `
+        <div class="popup status">
+          <div class="popup_heading">${popup_data["heading"]}</div>
+        `;
+
+      if (popup_data["failed_icon"]) {
+        popupHTML += `<img src="global/img/failed_cross.png" alt="check">`;
+      }
+
+      popupHTML += `<div class="message">${popup_data["message"]}</div>
+          <div class="options">
+            <button class="button-default bg-blue" onclick="resetPopupDimmer()">Okay</button>
+          </div>
+        </div>
+      `;
+
+      popupContainerElement.innerHTML = popupHTML;
+      break;
     case "remove_patient_reason":
       popupContainerElement.innerHTML = `
         <div class="popup reason">
@@ -692,8 +711,7 @@ function showPopup(popup_data, popup_type) {
       const manualEntryButtonElement = document.getElementById("manual_entry");
 
       scanIDButtonElement.addEventListener("click", () => {
-        alert("TODO: OCR SCANNING");
-        resetPopupDimmer();
+        showPopup("", "scan_id");
       });
       manualEntryButtonElement.addEventListener("click", () => {
         showPopup("", "add_patient_manual_entry_patient_id");
@@ -810,7 +828,7 @@ function showPopup(popup_data, popup_type) {
         });
       break;
     case "multiple_records_select":
-      console.log(popup_data);
+      // console.log(popup_data);
       let formatted_query = popup_data.query["last_name"].toUpperCase();
       if (popup_data.query["first_name"]) {
         formatted_query += `, ${popup_data.query["first_name"].toUpperCase()}`;
@@ -839,7 +857,7 @@ function showPopup(popup_data, popup_type) {
         // disable button if already in queue
         if (record.is_in_queue) {
           disabled_class = "disabled";
-          warning_title = "title='Patient has already been added to queue'"
+          warning_title = "title='Patient has already been added to queue'";
           button_class = "";
         }
 
@@ -936,7 +954,7 @@ function showPopup(popup_data, popup_type) {
         });
       break;
     case "expanded_patient_info":
-      // asked gemini to fixed this because i am so tired... it is 12:02 am
+      // asked gemini to fix this
       let viewRecordHTML = `
         <div class='popup view_record'>
           <div class='popup_heading'>Patient Information</div>
@@ -1030,6 +1048,46 @@ function showPopup(popup_data, popup_type) {
           addDatabasePatient(infoAddPatientElement.dataset.id);
         });
       }
+      break;
+    case "scan_id":
+      let scanIDHTML = "";
+      scanIDHTML = `
+        <div class='popup scan_id'>
+          <div class='popup_heading'>Scan Patient ID</div>
+          <div class='webcam_feed'>
+            <video id='webcam_video'></video>
+            <div class='guide'></div>
+          </div>
+          <div class='message'>Please keep the ID centered and steady.<br />Make sure that text is legible and well-lit.</div>
+          <div id='back' class="popup_id_back">
+            <svg width='48' height='48' viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg'>
+              <path d='M27.1414 41.7277L25.0602 43.809C24.1789 44.6902 22.7539 44.6902 21.882 43.809L3.65703 25.5934C2.77578 24.7121 2.77578 23.2871 3.65703 22.4152L21.882 4.19023C22.7633 3.30898 24.1883 3.30898 25.0602 4.19023L27.1414 6.27148C28.032 7.16211 28.0133 8.61523 27.1039 9.48711L15.807 20.2496H42.7508C43.9977 20.2496 45.0008 21.2527 45.0008 22.4996V25.4996C45.0008 26.7465 43.9977 27.7496 42.7508 27.7496H15.807L27.1039 38.5121C28.0227 39.384 28.0414 40.8371 27.1414 41.7277Z' fill='black' />
+            </svg>
+            Back
+          </div>
+        </div>
+      `;
+
+      popupContainerElement.insertAdjacentHTML("beforeend", scanIDHTML);
+      openWebcamStream().then((opened_cam) => {
+        if (!opened_cam) {
+          document.querySelector(".popup.scan_id").remove();
+          return;
+        }
+
+        document.querySelector(".popup.add_patient.choose").style.display =
+          "none";
+
+        document
+          .querySelector("#back.popup_id_back")
+          .addEventListener("click", () => {
+            closeWebcamStream();
+            document.querySelector(".popup.add_patient.choose").style.display =
+              "flex";
+            document.querySelector(".popup.scan_id").remove();
+          });
+      });
+
       break;
   }
 
@@ -1528,6 +1586,7 @@ function noResultsFormatTable(
 function generateCompletedRemovedTables(page, data) {
   let fetchedHTML = "";
   let colspan = 5;
+  let table_type = "completed";
   // console.log(data)
   if (page === "completed_pm_page") {
     data.forEach((completed_patient) => {
@@ -1553,6 +1612,7 @@ function generateCompletedRemovedTables(page, data) {
     });
     fetchedHTML += "</tr>";
   } else if (page === "removed_pm_page") {
+    table_type = "removed";
     colspan = 7;
 
     data.forEach((removed_patient) => {
@@ -1596,7 +1656,7 @@ function generateCompletedRemovedTables(page, data) {
   }
 
   if (!has_more_records) {
-    let message = `All completed patient records shown (${record_total})`;
+    let message = `All ${table_type} patient records shown (${record_total})`;
     if (window.location.search !== "") {
       message = `All matching records shown (${record_total})`;
     }
@@ -1604,4 +1664,98 @@ function generateCompletedRemovedTables(page, data) {
   }
 
   return fetchedHTML;
+}
+
+// ------ SCAN ID FUNCTIONS ------
+
+let webcam_stream = null;
+
+async function openWebcamStream() {
+  const videoElement = document.querySelector("#webcam_video");
+
+  try {
+    webcam_stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+    });
+
+    videoElement.srcObject = webcam_stream;
+
+    videoElement.play();
+
+    startOCRScanning(videoElement);
+    return true;
+  } catch (error) {
+    console.error("Camera access denied or unavailable: ", error);
+    alert("Could not open camera. Please allow permissions and try again.");
+  }
+  return false;
+}
+
+const canvas = document.createElement("canvas");
+const canvas_context = canvas.getContext("2d");
+
+let ocr_interval = null;
+let is_processing = false;
+
+function closeWebcamStream() {
+  if (webcam_stream) {
+    const tracks = webcam_stream.getTracks();
+    tracks.forEach((track) => track.stop());
+
+    webcam_stream = null;
+    clearInterval(ocr_interval);
+  }
+}
+
+async function startOCRScanning(videoElement) {
+  // create ocr worker (since it's local)
+  const worker = await Tesseract.createWorker("eng", 1, {
+    workerPath: "global/tesseract-ocr/worker.min.js",
+    corePath: "global/tesseract-ocr/tesseract-core.wasm.js",
+    langPath: "global/tesseract-ocr/",
+    // logger: m => console.log(m) // logging for debugging
+  });
+
+  ocr_interval = setInterval(async () => {
+    if (is_processing) return;
+
+    is_processing = true;
+
+    canvas.width = videoElement.videoWidth;
+    canvas.height = videoElement.videoHeight;
+
+    canvas_context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+    try {
+      const result = await worker.recognize(canvas);
+
+      const extracted_text = result.data.text;
+      // debugging ocr
+      // console.log("OCR Saw: ", extracted_text);
+
+      // modify this if patient id ever goes past 7 numbers
+      const patient_id_pattern = /\b\d{7}\b/;
+      const match = extracted_text.match(patient_id_pattern);
+      // match object debugging
+      // console.log(match);
+
+      if (match) {
+        // get patient id
+        const patient_id = match[0];
+        // stop ocr scanning loop
+        clearInterval(ocr_interval);
+        // stop webcam
+        closeWebcamStream();
+        // proceed to add patient as normal
+        addPatientRecordSearch({
+          patient_id,
+          ocr: true,
+        });
+      }
+    } catch (err) {
+      console.error("OCR error:", err);
+    } finally {
+      is_processing = false;
+    }
+  }, 1500);
 }

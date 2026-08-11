@@ -15,10 +15,9 @@ Made as a project for Practicum 1-2.
 - "Counter" role that can view and edit all department queues
 - QR code generation
 - Live queue updates as a patient
+- OCR scanning of patient membership IDs
 
 ## Features to Be Added
-- OCR scanning of patient membership IDs
-- Superadmin
 - Timeout of session
 
 ## Dropped Features

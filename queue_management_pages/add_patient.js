@@ -40,33 +40,63 @@ function addPatientRecordSearch(search_query) {
             document.getElementById("patient_id_search_form") ||
             document.getElementById("patient_details_search_form");
 
-          const inputElements = popupFormElement.querySelectorAll("input");
-          const warningElement =
-            popupFormElement.querySelector(".search_warning");
+          let warningElement = document.querySelector(".search_warning");
 
-          inputElements.forEach(inputElement => {
-            if (inputElement.value) {
-              inputElement.classList.add("warning");
-              inputElement.previousElementSibling.classList.add("warning");
-            }
+          if (popupFormElement) {
+            const inputElements = popupFormElement.querySelectorAll("input");
 
-            inputElement.addEventListener("input", () => {
-              // remove warning class when user types again
-              inputElements.forEach(allInput => {
-                allInput.classList.remove("warning");
-                allInput.previousElementSibling.classList.remove("warning");
-              })
+            inputElements.forEach((inputElement) => {
+              if (inputElement.value) {
+                inputElement.classList.add("warning");
+                inputElement.previousElementSibling.classList.add("warning");
+              }
 
-              warningElement.innerHTML = "";
-            })
-          })
+              inputElement.addEventListener("input", () => {
+                // remove warning class when user types again
+                inputElements.forEach((allInput) => {
+                  allInput.classList.remove("warning");
+                  allInput.previousElementSibling.classList.remove("warning");
+                });
+
+                warningElement.innerHTML = "";
+              });
+            });
+          }
 
           if (data.in_queue) {
             // if in queue already
+
+            // show a popup for ocr
+            if (search_query.ocr) {
+              showPopup(
+                {
+                  heading: "Existing Queued Patient",
+                  failed_icon: true,
+                  message: `<span class='bolded'>Patient ID ${data.patient_id} (${data.patient_name})</span> <br />is already in the queue.`,
+                },
+                "failed_popup",
+              );
+              return;
+            }
+
+            // else just show the warning thing
             warningElement.innerHTML = `<span class='bolded'>Patient ID ${data.patient_id} (${data.patient_name})</span> <br />is already in the queue.`;
           } else {
             // no records found
 
+            if (search_query.ocr) {
+              showPopup(
+                {
+                  heading: "Patient Not Found",
+                  failed_icon: true,
+                  message: `No matching patient records<br />were found for <span class='bolded'>Patient ID ${search_query.patient_id}</span>.`,
+                },
+                "failed_popup",
+              );
+              return;
+            }
+
+            // else just show the warning thing
             warningElement.innerHTML = `No matching patient records were found.`;
           }
         }
