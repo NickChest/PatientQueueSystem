@@ -16,9 +16,10 @@ Made as a project for Practicum 1-2.
 - QR code generation
 - Live queue updates as a patient
 - OCR scanning of patient membership IDs
+- Optimized short polling
 
 ## Features to Be Added
-- Timeout of session
+- N/A
 
 ## Dropped Features
 - Kiosk

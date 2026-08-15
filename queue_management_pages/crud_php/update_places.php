@@ -1,5 +1,6 @@
 <?php
 include "../../global/connection.php";
+include "php_functions.php";
 session_start();
 header("Content-Type: application/json");
 
@@ -9,6 +10,8 @@ if (!isset($_SESSION["username"])) {
   echo json_encode(["success" => false, "error" => "Not logged in."]);
   exit();
 }
+
+$department = $_SESSION["viewing_department"] ?? $_SESSION["user_department"];
 
 $raw_data = file_get_contents("php://input");
 $new_order_data = json_decode($raw_data, true);
@@ -48,6 +51,8 @@ foreach ($new_order_data as $order_data) {
     }
   }
 }
+
+updateTime($conn, "queue", $department);
 
 $stmt->close();
 $conn->close();

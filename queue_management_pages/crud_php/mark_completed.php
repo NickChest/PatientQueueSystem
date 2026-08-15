@@ -1,5 +1,6 @@
 <?php
 include "../../global/connection.php";
+include "php_functions.php";
 header("Content-Type: application/json");
 session_start();
 
@@ -11,6 +12,7 @@ if (!isset($_SESSION["username"])) {
 }
 
 $username = $_SESSION["username"];
+$department = $_SESSION["viewing_department"] ?? $_SESSION["user_department"];
 
 // heavily referenced from gemini again
 $raw_data = file_get_contents("php://input");
@@ -53,7 +55,8 @@ try {
   $conn->commit();
 
   echo json_encode(["success" => true, "message" => "Marked Completed :DDDDDDD"]);
-
+  updateTime($conn, "completed", $department);
+  
 } catch (Exception $e) {
   // rollback all changes if it failed (wow! i didn't know this was a thing! would've been so useful like a year ago!!!!!!!!!!!!)
   $conn->rollback();

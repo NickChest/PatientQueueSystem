@@ -139,33 +139,25 @@ function generateCounterDropdown()
 {
   global $departments;
 
-  // $date_clause = "WHERE added_time_and_date >= CURDATE() AND added_time_and_date < CURDATE() + INTERVAL 1 DAY";
-  // if ($_SESSION["privileges"] === "admin") {
-  //   $date_clause = "";
-  // }
-
-  // $sql = "SELECT DISTINCT department from tbl_queues $date_clause ORDER BY department";
-
-  // $stmt = $conn->prepare($sql);
-  // $stmt->execute();
-  // $result = $stmt->get_result();
-
   echo "<select id='counter_staff_select' name='counter_staff_select'>";
-
-  // while ($row = $result->fetch_assoc()) {
-  //   echo "
-  //     <option value='" . $row["department"] . "'>" . $row["department"] . " Queue</option>
-  //   ";
-  // }
 
   asort($departments);
   foreach ($departments as $department => $code) {
-      echo "
+    echo "
         <option value='$department'>$department Queue</option>
       ";
   }
 
   echo "</select>";
-  // $stmt->close();
-  // $conn->close();
+}
+
+function updateTime($conn, string $page_name, string $department)
+{
+  $time_column = "time_last_updated_$page_name";
+  $current_datetime = date('Y-m-d H:i:s');
+  $sql = "UPDATE tbl_last_page_updates SET $time_column = ? WHERE department = ?";
+  $stmt = $conn->prepare($sql);
+  $stmt->bind_param("ss", $current_datetime, $department);
+  $stmt->execute();
+  $stmt->close();
 }

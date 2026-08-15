@@ -76,6 +76,7 @@ function clearURLSearchParams() {
   url_params = new URLSearchParams(query_string);
 }
 
+// handles get queries in url
 if (url_params.has("page")) {
   first_loaded_page = url_params.get("page");
 
@@ -107,10 +108,25 @@ let has_more_records = true;
 
 let record_total = 0;
 
-loadPage(first_loaded_page);
+
+if (counterStaffSelectElement) {
+  getDepartmentQueue(counterStaffSelectElement.value, true);
+} else {
+  loadPage(first_loaded_page);
+}
 
 let current_page = first_loaded_page; // used for when user role is "Counter" and for search
 
+let page_last_reloaded; // used for syncing tables (optimized short polling)
+
+async function init() {
+  page_last_reloaded = await updateLastReloaded();
+  // console.log(page_last_reloaded);
+}
+
+init();
+
+// for changing pages
 pageButtonElements.forEach((page_button) => {
   page_button.addEventListener("click", () => {
     if (page_button.id === "selected") return;
@@ -141,9 +157,8 @@ pageButtonElements.forEach((page_button) => {
       clearURLSearchParams();
     }
 
-    // 3. Load the new page
     current_page = page;
-    loadPage(page);
+    page_last_reloaded = loadPage(page);
   });
 });
 
@@ -242,7 +257,7 @@ function loadPage(page) {
             });
 
           updatePlaces(rowElements);
-          updateDatabasePlaces(page);
+          // updateDatabasePlaces(page);
 
           setQueuePageFunctions();
         })
@@ -540,7 +555,7 @@ function loadPage(page) {
               );
             });
 
-          updateDatabasePlaces(page);
+          // updateDatabasePlaces(page);
 
           setFocusedViewPageFunction();
         });
@@ -1118,10 +1133,53 @@ function viewRecord(id, id_type, is_add_patient) {
     });
 }
 
+async function updateLastReloaded() {
+  const current_page_name = current_page.split("_")[0].replace("focused", "queue");
+  try {
+    const response = await fetch(
+      "queue_management_pages/update_pages_times.php",
+      {
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+        body: JSON.stringify({
+          current_page_name
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok/File not found");
+    }
+
+    const data = await response.json();
+
+    if (data.success) {
+      // console.log(data.fetched_time);
+      return data.fetched_time;
+    }
+  } catch (error) {
+    console.error("AJAX Error: ", error);
+  }
+}
+
+// reloads table if any updates occur (optimized short polling)
+setInterval(async () => {
+  console.log("page_last_reloaded: " + page_last_reloaded);
+
+  const fetched_time = await updateLastReloaded();
+  // if fetched_time exists, and plr is not equal to it
+  // the exist check prevents a loop if it ever returns null
+  if (fetched_time && page_last_reloaded !== fetched_time) {
+    loadPage(current_page);
+    // update time after reload
+    page_last_reloaded = fetched_time;
+  }
+}, 2000);
+
 // ------ COUNTER SCRIPTS ------
 
 if (counterStaffSelectElement) {
-  getDepartmentQueue(counterStaffSelectElement.value, false);
+  // getDepartmentQueue(counterStaffSelectElement.value, false);
 
   counterStaffSelectElement.addEventListener("change", () => {
     // reset global variables for scrolling

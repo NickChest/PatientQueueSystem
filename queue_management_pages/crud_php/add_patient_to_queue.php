@@ -106,5 +106,7 @@ $insert_stmt->close();
 
 echo json_encode(["success" => true, "patient_id" => $patient_id, "formatted_name" => $formatted_name, "queue_id" => $queue_id, "date_and_time" => date('Y-d-m | h:i:s A'), "waiting" => $waiting]);
 
+updateTime($conn, "queue", $department);
+
 $conn_patients->close();
 $conn->close();
