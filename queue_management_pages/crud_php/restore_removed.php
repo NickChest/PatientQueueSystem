@@ -64,6 +64,17 @@ try {
   $stmt_update_place->execute();
   $stmt_update_place->close();
 
+  $current_time = date("Y-m-d H:i:s");
+
+  // fix null time bug for if patient is restored alone in queue
+  $auto_call_sql = "UPDATE tbl_queues
+               SET called_time_and_date = ?, is_calling = 1
+               WHERE patient_id = ? AND place = 1";
+  $stmt_auto_call = $conn->prepare($auto_call_sql);
+  $stmt_auto_call->bind_param("si", $current_time, $patient_id);
+  $stmt_auto_call->execute();
+  $stmt_auto_call->close();
+
   $conn->commit();
   echo json_encode(["success" => true, "message" => "YAYAYYAYYYYAYAYAYA RESTOREDDDDDD :DDDDDDDD"]);
   updateTime($conn, "queue", $department);

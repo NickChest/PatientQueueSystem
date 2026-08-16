@@ -120,12 +120,12 @@ if (!empty($_POST)) {
         </article>
       </main>
 
-      <script src='queue_management_pages/icons.js'></script>
-      <script src='queue_management_pages/page_script.js'></script>
-      <script src='queue_management_pages/queue_management_tbl_script.js'></script>
-      <script src='queue_management_pages/add_patient.js'></script>
-      <script src='queue_management_pages/removed_management_page.js'></script>
-      <script src='queue_management_pages/focused_view_script.js'></script>
+      <script src='queue_management_pages/pages_dependencies_php_js/icons.js'></script>
+      <script src='queue_management_pages/pages_dependencies_php_js/page_script.js'></script>
+      <script src='queue_management_pages/pages_dependencies_php_js/queue_management_tbl_script.js'></script>
+      <script src='queue_management_pages/queue_page_php_js/add_patient.js'></script>
+      <script src='queue_management_pages/removed_page_php_js/removed_management_page.js'></script>
+      <script src='queue_management_pages/focused_view_php_js/focused_view_script.js'></script>
     ";
   } else {
     echo "
@@ -154,7 +154,7 @@ if (!empty($_POST)) {
       </div>
     </form>
 
-    <script src='queue_management_pages/login_script.js'></script>
+    <script src='queue_management_pages/pages_dependencies_php_js/login_script.js'></script>
     ";
   }
 

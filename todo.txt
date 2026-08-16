@@ -1,4 +1,1 @@
 ADD PAGE REFRESH WHEN CLICKING BACK/FORWARD TP GET URL PARAMETERS
-fix null time error when patient is restored to queue and its first
-
-maybe refactor the file structure because damn girl

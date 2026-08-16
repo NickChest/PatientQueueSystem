@@ -187,7 +187,7 @@ function loadPage(page) {
         });
       }
 
-      fetch("queue_management_pages/queue_management_page.php")
+      fetch("queue_management_pages/queue_page_php_js/queue_management_page.php")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok/File not found");
@@ -283,7 +283,7 @@ function loadPage(page) {
         });
       }
 
-      fetch("queue_management_pages/completed_management_page.php")
+      fetch("queue_management_pages/completed_page_php_js/completed_management_page.php")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok/File not found");
@@ -364,7 +364,7 @@ function loadPage(page) {
         });
       }
 
-      fetch("queue_management_pages/removed_management_page.php")
+      fetch("queue_management_pages/removed_page_php_js/removed_management_page.php")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok/File not found");
@@ -452,7 +452,7 @@ function loadPage(page) {
         });
       }
 
-      fetch("queue_management_pages/queue_management_page.php")
+      fetch("queue_management_pages/queue_page_php_js/queue_management_page.php")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok/File not found");
@@ -1141,7 +1141,7 @@ async function updateLastReloaded() {
     .replace("focused", "queue");
   try {
     const response = await fetch(
-      "queue_management_pages/update_pages_times.php",
+      "queue_management_pages/pages_dependencies_php_js/update_pages_times.php",
       {
         headers: { "Content-Type": "application/json" },
         method: "POST",
@@ -1171,7 +1171,7 @@ let current_date = new Date().getDate(); // gets date (used for updating pages a
 // reloads table if any updates occur (optimized short polling)
 setInterval(async () => {
   // debugging
-  console.log("page_last_reloaded: " + page_last_reloaded);
+  // console.log("page_last_reloaded: " + page_last_reloaded);
 
   const today = new Date().getDate();
   if (today !== current_date) {
@@ -1488,7 +1488,7 @@ function loadMoreRecords() {
     }
 
     // normal scrolling
-    fetch("queue_management_pages/completed_management_page.php", {
+    fetch("queue_management_pages/completed_page_php_js/completed_management_page.php", {
       headers: { "Content-Type": "application/json" },
       method: "POST",
       body: JSON.stringify({
@@ -1528,7 +1528,7 @@ function loadMoreRecords() {
     }
 
     // normal scrolling
-    fetch("queue_management_pages/removed_management_page.php", {
+    fetch("queue_management_pages/removed_page_php_js/removed_management_page.php", {
       headers: { "Content-Type": "application/json" },
       method: "POST",
       body: JSON.stringify({

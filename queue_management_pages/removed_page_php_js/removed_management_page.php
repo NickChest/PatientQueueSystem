@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "../global/connection.php";
+include "../../global/connection.php";
 header("Content-Type: application/json");
 
 // check if user is logged in before doing anything
