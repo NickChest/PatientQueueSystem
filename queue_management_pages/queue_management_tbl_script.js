@@ -158,7 +158,7 @@ function moveDatabaseMarkCompleted(record_id, queue_id, page) {
       if (data.success) {
         clearInterval(queue_interval);
         navDimmer.classList.remove("loading");
-        
+
         // We leave the DOM completely frozen here! No .remove()!
 
         const popup_data = {
@@ -172,7 +172,13 @@ function moveDatabaseMarkCompleted(record_id, queue_id, page) {
 
         // Pass the record_id so the calculation ignores it
         updateDatabasePlaces(page, record_id).then(() => {
-          loadPage(page);
+          updateLastReloaded().then((fetched_time) => {
+            if (fetched_time) {
+              page_last_reloaded = fetched_time;
+            }
+
+            loadPage(page);
+          });
         });
       } else {
         alert("Failed to move record: " + data.error);
@@ -253,7 +259,13 @@ function moveDatabaseRemovePatient(patient_info, page) {
 
         // Pass the record_id so the calculation ignores it
         updateDatabasePlaces(page, patient_info["record_id"]).then(() => {
-          loadPage(page);
+          updateLastReloaded().then((fetched_time) => {
+            if (fetched_time) {
+              page_last_reloaded = fetched_time;
+            }
+
+            loadPage(page);
+          });
         });
       } else {
         alert("Failed to move record: " + data.error);
@@ -409,7 +421,9 @@ function updateDatabasePlaces(page, deleted_record_id = null) {
     let current_place = 1;
 
     // 1. Grab the currently serving patient
-    const currentPatient = document.querySelector(".patient_summary .record_id");
+    const currentPatient = document.querySelector(
+      ".patient_summary .record_id",
+    );
     if (currentPatient && currentPatient.value != deleted_record_id) {
       new_order.push({
         record_id: currentPatient.value,
@@ -418,7 +432,9 @@ function updateDatabasePlaces(page, deleted_record_id = null) {
     }
 
     // 2. Grab all upcoming patients
-    const upcomingPatients = document.querySelectorAll(".upcoming_patients .record_id");
+    const upcomingPatients = document.querySelectorAll(
+      ".upcoming_patients .record_id",
+    );
     upcomingPatients.forEach((patient) => {
       if (patient.value != deleted_record_id) {
         new_order.push({

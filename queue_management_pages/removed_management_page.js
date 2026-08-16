@@ -49,7 +49,13 @@ function moveDatabaseRestorePatient(record_id, queue_id, patient_id) {
           success_icon: true,
         };
 
-        loadPage("removed_pm_page");
+        updateLastReloaded().then((fetched_time) => {
+          if (fetched_time) {
+            page_last_reloaded = fetched_time;
+          }
+
+          loadPage("removed_pm_page");
+        });
         showPopup(popup_data, "success_popup");
       } else {
         alert("Failed to restore record: " + data.error);

@@ -108,7 +108,6 @@ let has_more_records = true;
 
 let record_total = 0;
 
-
 if (counterStaffSelectElement) {
   getDepartmentQueue(counterStaffSelectElement.value, true);
 } else {
@@ -158,7 +157,13 @@ pageButtonElements.forEach((page_button) => {
     }
 
     current_page = page;
-    page_last_reloaded = loadPage(page);
+    updateLastReloaded().then((fetched_time) => {
+      if (fetched_time) {
+        page_last_reloaded = fetched_time;
+      }
+
+      loadPage(current_page);
+    });
   });
 });
 
@@ -257,7 +262,6 @@ function loadPage(page) {
             });
 
           updatePlaces(rowElements);
-          // updateDatabasePlaces(page);
 
           setQueuePageFunctions();
         })
@@ -554,8 +558,6 @@ function loadPage(page) {
                 false,
               );
             });
-
-          // updateDatabasePlaces(page);
 
           setFocusedViewPageFunction();
         });
@@ -1134,7 +1136,9 @@ function viewRecord(id, id_type, is_add_patient) {
 }
 
 async function updateLastReloaded() {
-  const current_page_name = current_page.split("_")[0].replace("focused", "queue");
+  const current_page_name = current_page
+    .split("_")[0]
+    .replace("focused", "queue");
   try {
     const response = await fetch(
       "queue_management_pages/update_pages_times.php",
@@ -1142,7 +1146,7 @@ async function updateLastReloaded() {
         headers: { "Content-Type": "application/json" },
         method: "POST",
         body: JSON.stringify({
-          current_page_name
+          current_page_name,
         }),
       },
     );
@@ -1162,9 +1166,19 @@ async function updateLastReloaded() {
   }
 }
 
+let current_date = new Date().getDate(); // gets date (used for updating pages after midnight)
+
 // reloads table if any updates occur (optimized short polling)
 setInterval(async () => {
+  // debugging
   console.log("page_last_reloaded: " + page_last_reloaded);
+
+  const today = new Date().getDate();
+  if (today !== current_date) {
+    current_date = today;
+    loadPage(current_page);
+    return;
+  }
 
   const fetched_time = await updateLastReloaded();
   // if fetched_time exists, and plr is not equal to it

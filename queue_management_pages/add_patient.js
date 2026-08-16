@@ -136,8 +136,16 @@ function addDatabasePatient(record_id) {
         showPopup(popup_data, "success_popup");
         generateQueueSlip(data);
 
-        // users can only add patients on the queue management page
-        loadPage("queue_m_page");
+        
+        // update last page updated time
+        updateLastReloaded().then((fetched_time) => {
+          if (fetched_time) {
+            page_last_reloaded = fetched_time;
+          }
+          
+          // users can only add patients on the queue management page
+          loadPage("queue_m_page");
+        });
       } else {
         alert("Failed to add patient to queue: " + data.error);
       }
