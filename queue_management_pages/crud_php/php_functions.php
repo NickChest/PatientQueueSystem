@@ -95,9 +95,9 @@ function getExpectedQueueID(string $user_department, $conn, bool $read_only = tr
 function isInQueue(int $patient_id, string $user_department, string $user_privileges, $conn)
 {
   $date_clause = "AND added_time_and_date >= CURDATE() AND added_time_and_date < CURDATE() + INTERVAL 1 DAY";
-  if ($user_privileges === "admin") {
-    $date_clause = "";
-  }
+  // if ($user_privileges === "admin") {
+  //   $date_clause = "";
+  // }
 
   $sql = "SELECT queue_id FROM tbl_queues WHERE patient_id = ? AND department = ? $date_clause";
 
