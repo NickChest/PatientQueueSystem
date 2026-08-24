@@ -1779,15 +1779,20 @@ function closeWebcamStream() {
   }
 }
 
-async function startOCRScanning(videoElement) {
-  // create ocr worker (since it's local)
-  const worker = await Tesseract.createWorker("eng", 1, {
+let worker;
+async function createTesseractWorker() {
+  // create ocr worker (since it's (partially) local)
+  worker = await Tesseract.createWorker("eng", 1, {
     workerPath: "global/tesseract-ocr/worker.min.js",
     corePath: "global/tesseract-ocr/tesseract-core.wasm.js",
-    langPath: "global/tesseract-ocr/",
+    langPath: "https://tessdata.projectnaptha.com/4.0.0_fast",
     // logger: m => console.log(m) // logging for debugging
   });
+}
 
+createTesseractWorker();
+
+async function startOCRScanning(videoElement) {
   ocr_interval = setInterval(async () => {
     if (is_processing) return;
 

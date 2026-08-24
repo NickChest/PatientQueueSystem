@@ -19,7 +19,7 @@ Made as a project for Practicum 1-2.
 - Optimized short polling
 
 ## Features to Be Added
-- N/A
+- Accounts management
 
 ## Dropped Features
 - Kiosk

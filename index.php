@@ -53,7 +53,8 @@ if (!empty($_POST)) {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inconsolata:wght@200..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <script src="global/qrcodejs-master/qrcode.min.js"></script>
-  <script src="global/tesseract-ocr/tesseract.min.js"></script>
+  <!-- <script src="global/tesseract-ocr/tesseract.min.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <link rel='shortcut icon' href='global/icon.ico' type='image/x-icon'>
   <title>Login | Patient Queue System</title>
 </head>
