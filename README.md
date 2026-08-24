@@ -1,6 +1,9 @@
 # Harrow + Ammit Medical Center Centralized Patient Queue
 Made as a project for Practicum 1-2.
 
+## Live URL
+https://patientqueuesystem.infinityfreeapp.com/
+
 ## Features
 - Simple, clean interface
 - One-page AJAX queue management
